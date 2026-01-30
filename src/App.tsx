@@ -2,7 +2,6 @@ import { ThemeProvider } from "@/components/theme-provider"
 import viteLogo from "/vite.svg";
 import { Link, Outlet } from "react-router-dom";
 import { Search, Menu, X, Bell, Settings, User } from "lucide-react";
-import NavLink from "./components/link/link";
 import { useState, useEffect } from "react";
 import { ModeToggle } from "./components/mode-toggle";
 
