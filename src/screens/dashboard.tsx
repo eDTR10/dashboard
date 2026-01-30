@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { ChevronLeft, ChevronRight, Calendar, Search, ArrowRight, ArrowLeft, Clock, FileText, Users, Newspaper, Megaphone, Lock, Unlock, MapPin, Droplets, } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar, Search, ArrowRight, ArrowLeft, FileText,  Newspaper, Megaphone, Lock, Unlock, MapPin, Droplets, } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
@@ -319,7 +319,7 @@ const Dashboard = () => {
   return (
     <div className="h-screen w-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-hidden">
       {/* DICT Projects Marquee */}
-      <div className="w-full bg-white/80 py-3 px-2 flex items-center justify-center shadow-md mb-4 animate-fade-in-down">
+      <div className="w-full  bg-white/80 py-3 px-2 flex items-center justify-center shadow-md mb-4 animate-fade-in-down">
         <div className="flex items-center justify-center gap-16 w-full max-w-6xl mx-auto">
           <img src="/src/assets/eGovPH Logo.png" alt="eGov PH" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 0 ? 'animate-wiggle' : ''}`} />
           <img src="/src/assets/eLGU Logo.png" alt="eLGU" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 1 ? 'animate-wiggle' : ''}`} />
@@ -333,7 +333,7 @@ const Dashboard = () => {
           <img src="/src/assets/NIPPSB.png" alt="ICT Planning, Policy and Standards" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 9 ? 'animate-wiggle' : ''}`} />
         </div>
       </div>
-      <div className="h-full w-full flex gap-5 p-5">
+      <div className="h-[calc(100%-120px)] w-full flex gap-5 p-5 pt-0">
         {/* Left Side - Citizen Charter */}
         <div className="flex-1 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-blue-100/50 overflow-hidden">
           <div className="h-full flex flex-col">
@@ -684,7 +684,7 @@ const Dashboard = () => {
               >
                 {/* Panel 1: Calendar Events */}
                 <div className="w-full flex-shrink-0">
-                  <div className="space-y-2.5 max-h-[300px] overflow-y-auto custom-scrollbar">
+                  <div className="space-y-2.5 max-h-[200px] overflow-y-auto custom-scrollbar">
                     {events.slice(0, 4).map((event, index) => (
                       <div
                         key={index}
@@ -709,7 +709,7 @@ const Dashboard = () => {
 
                 {/* Panel 2: Latest News */}
                 <div className="w-full flex-shrink-0">
-                  <div className="space-y-2.5 max-h-[300px] overflow-y-auto custom-scrollbar">
+                  <div className="space-y-2.5 max-h-[200px] overflow-y-auto custom-scrollbar">
                     {news.map((item, index) => (
                       <div
                         key={index}
@@ -730,7 +730,7 @@ const Dashboard = () => {
 
                 {/* Panel 3: Announcements */}
                 <div className="w-full flex-shrink-0">
-                  <div className="space-y-2.5 max-h-[300px] overflow-y-auto custom-scrollbar">
+                  <div className="space-y-2.5 max-h-[200px] overflow-y-auto custom-scrollbar">
                     {announcements.map((item, index) => (
                       <div
                         key={index}
