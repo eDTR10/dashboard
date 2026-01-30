@@ -22,7 +22,7 @@ const DashboardLazy= lazy(() =>
 
 const router = createBrowserRouter([
   {
-    path: "/main/",
+    path: "/dashboard/",
     element: <>
         <Suspense fallback={<Loader />}>
           <DashboardLazy />
