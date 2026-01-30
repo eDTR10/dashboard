@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { ChevronLeft, ChevronRight, Calendar, Cloud, Search, ArrowRight, ArrowLeft, Clock, FileText, Users, Newspaper, Megaphone, Lock, Unlock } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar,  Search, ArrowRight, ArrowLeft, Clock, FileText, Users, Newspaper, Megaphone, Lock, Unlock, MapPin, Droplets, } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
@@ -36,8 +36,8 @@ const Dashboard = () => {
 
   // Sample YouTube video IDs - replace with your actual videos
   const videoIds = [
-    "dQw4w9WgXcQ",
-    "9bZkp7q19f0",
+    "_PdnRgVc19w",
+    "6tM6SfzhcrA",
     "kJQP7kiw5Fk"
   ]
 
@@ -50,10 +50,30 @@ const Dashboard = () => {
   ]
 
   const news = [
-    { date: "Jan 30, 2026", title: "New Digital Services Launched", category: "Technology" },
-    { date: "Jan 28, 2026", title: "DICT Announces Free Training Programs", category: "Education" },
-    { date: "Jan 25, 2026", title: "Cybersecurity Awareness Campaign", category: "Security" },
-    { date: "Jan 22, 2026", title: "Free WiFi Expansion Project", category: "Infrastructure" },
+    { 
+      date: "Jan 20, 2026", 
+      title: "eGovPH Update", 
+      category: "Technology",
+      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02Xw3fy4yLPGAfVja9t9v77xYrumbQVrcQvruZfSXyMxbDDLvBSwfyAw32B8854MkPl"
+    },
+    { 
+      date: "Jan 28, 2026", 
+      title: "DICT Announces Free Training Programs", 
+      category: "Education",
+      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid0259kWuHjiLx8DLxdw3fo7MgqRNqmnt1pwdKtQcnSRMt2qCk9YekXwKE8P6VaJ2cJEl"
+    },
+    { 
+      date: "Jan 25, 2026", 
+      title: "Cybersecurity Awareness Campaign", 
+      category: "Security",
+      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02G45UmyHuSeTTEE3FE4u1EwVz7rwqmx3RsUSfFtTPAXoeK7m6YNXAK7tAkyidytBTl"
+    },
+    { 
+      date: "Jan 22, 2026", 
+      title: "Free WiFi Expansion Project", 
+      category: "Infrastructure",
+      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02G45UmyHuSeTTEE3FE4u1EwVz7rwqmx3RsUSfFtTPAXoeK7m6YNXAK7tAkyidytBTl"
+    },
   ]
 
   const announcements = [
@@ -180,7 +200,6 @@ const Dashboard = () => {
         }
         const response = await axios.request(options)
         if (response.data) {
-          // Convert Kelvin to Celsius: Celsius = Kelvin - 273.15
           const tempInCelsius = response.data.main?.temprature 
             ? Math.round(response.data.main.temprature - 273.15) 
             : 24
@@ -194,7 +213,6 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.error('Weather API error:', error)
-        // Set default values if API fails
         setWeather({
           temperature: 24,
           humidity: 65,
@@ -205,7 +223,6 @@ const Dashboard = () => {
     }
     
     fetchWeather()
-    // Fetch weather every 10 minutes
     const weatherInterval = setInterval(fetchWeather, 600000)
     return () => clearInterval(weatherInterval)
   }, [])
@@ -241,17 +258,11 @@ const Dashboard = () => {
     setCurrentVideoIndex((prev) => (prev + 1) % videoIds.length)
   }
 
-  const handleVideoEnd = () => {
-    // Automatically go to next video when current video ends
-    nextVideo()
-  }
-
   const prevVideo = () => {
     setCurrentVideoIndex((prev) => (prev - 1 + videoIds.length) % videoIds.length)
   }
 
   const handleSearch = () => {
-    // Search is now reactive through filteredServices
     console.log("Searching for:", searchQuery)
   }
 
@@ -273,12 +284,9 @@ const Dashboard = () => {
 
   const handleTouchEnd = () => {
     if (touchStart - touchEnd > 75) {
-      // Swiped left
       setCurrentPanel(1)
     }
-
     if (touchStart - touchEnd < -75) {
-      // Swiped right
       setCurrentPanel(0)
     }
   }
@@ -303,248 +311,298 @@ const Dashboard = () => {
     })
   }
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
+
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-br from-blue-50 to-white overflow-hidden">
-      <div className="h-full w-full flex gap-4 p-4">
+    <div className="h-screen w-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-hidden">
+      <div className="h-full w-full flex gap-5 p-5">
         {/* Left Side - Citizen Charter */}
-        <div className="flex-1 bg-white rounded-xl shadow-xl border-2 border-blue-200 overflow-hidden p-6">
+        <div className="flex-1 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-blue-100/50 overflow-hidden">
           <div className="h-full flex flex-col">
-            {/* Header - Always visible */}
-            <div className="mb-4 animate-fade-in">
-              <h1 className="text-3xl font-bold text-blue-900 mb-4">
-                {selectedService ? `Citizen Charter - ${selectedService.title}` : 'Citizen Charter'}
-              </h1>
+            {/* Header with Gradient Background */}
+            <div className="bg-gradient-to-br from-sky-400 to-blue-600 p-6 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white tracking-tight">
+                    {selectedService ? selectedService.title : 'Citizen Charter'}
+                  </h1>
+                  {!selectedService && (
+                    <p className="text-blue-100 text-sm">Browse available government services</p>
+                  )}
+                </div>
+              </div>
               
               {!selectedService && (
-                /* Search Input */
                 <div className="relative">
+                  <Search className="absolute z-30 left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-600" />
                   <Input
                     type="text"
-                    placeholder="Search services..."
+                    placeholder="Search services by name or category..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                    className="w-full h-12 pl-4 pr-12 text-base border-2 border-blue-300 focus:border-blue-500 rounded-lg"
+                    className="w-full h-12 pl-12 pr-4 text-base bg-white/90 backdrop-blur-sm border-0 focus:ring-2 focus:ring-white/50 rounded-xl shadow-lg placeholder:text-blue-300"
                   />
-                  <Button
-                    onClick={handleSearch}
-                    size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 rounded-lg"
-                  >
-                    <Search className="w-5 h-5" />
-                  </Button>
                 </div>
               )}
             </div>
 
             {!selectedService ? (
-              <>
-                {/* Service Items */}
-                <div className="flex-1 space-y-3 overflow-y-auto">
-                  {filteredServices.length > 0 ? (
-                    filteredServices.map((item, index) => (
-                      <button
-                        key={item.id}
-                        onClick={() => handleServiceClick(item)}
-                        className="w-full group bg-gradient-to-r from-blue-50 to-white p-5 rounded-lg border-2 border-blue-200 hover:border-blue-500 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex items-center justify-between"
-                        style={{
-                          animation: `slideInLeft 0.5s ease-out ${index * 0.1}s both`
-                        }}
-                      >
-                        <div className="text-left">
-                          <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
-                            {item.title}
-                          </h3>
-                          <p className="text-xs text-blue-600 mt-1">{item.category}</p>
+              <div className="flex-1 p-6 space-y-3 overflow-y-auto custom-scrollbar">
+                {filteredServices.length > 0 ? (
+                  filteredServices.map((item, index) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleServiceClick(item)}
+                      className="w-full group bg-gradient-to-r from-white to-blue-50/50 p-5 rounded-xl border border-blue-100 hover:border-blue-400 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex items-center justify-between overflow-hidden relative"
+                      style={{
+                        animation: `slideInLeft 0.5s ease-out ${index * 0.05}s both`
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="text-left relative z-10">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="px-2.5 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                            {item.category}
+                          </span>
                         </div>
-                        <ArrowRight className="w-5 h-5 text-blue-500 group-hover:text-blue-700 group-hover:translate-x-2 transition-all" />
-                      </button>
-                    ))
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                      <Search className="w-16 h-16 text-blue-300 mb-4" />
-                      <h3 className="text-xl font-semibold text-blue-900 mb-2">No services found</h3>
-                      <p className="text-sm text-blue-600">Try adjusting your search terms</p>
+                        <h3 className="text-lg font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
+                          {item.title}
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-1">{item.description}</p>
+                      </div>
+                      <div className="relative z-10 flex items-center gap-2">
+                        <div className="w-10 h-10 rounded-full bg-blue-500 group-hover:bg-blue-600 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                          <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mb-4">
+                      <Search className="w-12 h-12 text-blue-400" />
                     </div>
-                  )}
-                </div>
-              </>
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">No services found</h3>
+                    <p className="text-sm text-slate-500">Try adjusting your search terms or browse all services</p>
+                  </div>
+                )}
+              </div>
             ) : (
-              <>
-                {/* Service Detail View */}
-                <div className="flex-1 flex flex-col animate-fade-in overflow-hidden">
-                  {/* Back Button */}
-                  <Button
-                    onClick={handleBackToList}
-                    variant="ghost"
-                    className="w-fit mb-4 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Services
-                  </Button>
+              <div className="flex-1 flex flex-col p-6 overflow-hidden animate-fade-in">
+                <Button
+                  onClick={handleBackToList}
+                  variant="ghost"
+                  className="w-fit mb-6 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg group"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                  Back to Services
+                </Button>
 
-                  {/* Service Details */}
-                  <div className="flex-1 overflow-y-auto space-y-6">
-                    {/* Category Badge */}
-                    <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-5 rounded-lg">
-                      <p className="text-blue-100 text-sm font-medium">{selectedService.category}</p>
-                    </div>
-
-                    {/* Description */}
-                    <div className="bg-blue-50 p-5 rounded-lg border-l-4 border-blue-500">
-                      <h3 className="text-lg font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                        <FileText className="w-5 h-5" />
-                        Description
-                      </h3>
-                      <p className="text-blue-800">{selectedService.description}</p>
-                    </div>
-
-                    {/* Requirements */}
-                    <div className="bg-white p-5 rounded-lg border-2 border-blue-200">
-                      <h3 className="text-lg font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                        <FileText className="w-5 h-5" />
-                        Requirements
-                      </h3>
-                      <ul className="space-y-2">
-                        {selectedService.requirements.map((req, index) => (
-                          <li key={index} className="flex items-start gap-2 text-blue-800">
-                            <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              {index + 1}
-                            </span>
-                            <span>{req}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Processing Info */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Clock className="w-5 h-5 text-blue-600" />
-                          <h4 className="font-semibold text-blue-900">Processing Time</h4>
-                        </div>
-                        <p className="text-blue-800 font-medium">{selectedService.processingTime}</p>
+                <div className="flex-1 overflow-y-auto custom-scrollbar space-y-5">
+                  {/* Category Badge */}
+                  <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white p-6 rounded-xl shadow-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                        <FileText className="w-6 h-6" />
                       </div>
-
-                      <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border-2 border-green-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg">💵</span>
-                          <h4 className="font-semibold text-green-900">Fee</h4>
-                        </div>
-                        <p className="text-green-800 font-medium">{selectedService.fee}</p>
+                      <div>
+                        <p className="text-blue-100 text-xs font-medium mb-1">Service Category</p>
+                        <p className="text-xl font-bold">{selectedService.category}</p>
                       </div>
-                    </div>
-
-                    {/* Office */}
-                    <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-5 rounded-lg border-2 border-purple-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Users className="w-5 h-5 text-purple-600" />
-                        <h4 className="font-semibold text-purple-900">Office Location</h4>
-                      </div>
-                      <p className="text-purple-800 font-medium">{selectedService.office}</p>
                     </div>
                   </div>
+
+                  {/* Description */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border-l-4 border-blue-500 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                      <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-white" />
+                      </div>
+                      Description
+                    </h3>
+                    <p className="text-slate-700 leading-relaxed">{selectedService.description}</p>
+                  </div>
+
+                  {/* Requirements */}
+                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                      <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-white" />
+                      </div>
+                      Requirements
+                    </h3>
+                    <ul className="space-y-3">
+                      {selectedService.requirements.map((req, index) => (
+                        <li key={index} className="flex items-start gap-3 group">
+                          <span className="w-7 h-7 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5 shadow-sm group-hover:scale-110 transition-transform">
+                            {index + 1}
+                          </span>
+                          <span className="text-slate-700 leading-relaxed">{req}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Processing Info Grid */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gradient-to-br from-violet-50 to-purple-50 p-5 rounded-xl border border-violet-200 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 bg-violet-500 rounded-lg flex items-center justify-center">
+                          <Clock className="w-4 h-4 text-white" />
+                        </div>
+                        <h4 className="font-bold text-slate-800 text-sm">Processing Time</h4>
+                      </div>
+                      <p className="text-violet-700 font-bold text-lg">{selectedService.processingTime}</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-emerald-50 to-green-50 p-5 rounded-xl border border-emerald-200 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                          <span className="text-base">💵</span>
+                        </div>
+                        <h4 className="font-bold text-slate-800 text-sm">Service Fee</h4>
+                      </div>
+                      <p className="text-emerald-700 font-bold text-lg">{selectedService.fee}</p>
+                    </div>
+                  </div>
+
+                  {/* Office Location */}
+                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-xl border border-orange-200 shadow-sm">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                        <Users className="w-5 h-5 text-white" />
+                      </div>
+                      <h4 className="font-bold text-slate-800">Office Location</h4>
+                    </div>
+                    <p className="text-orange-800 font-semibold text-lg">{selectedService.office}</p>
+                  </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Right Side - Fixed */}
-        <div className="w-[400px] flex flex-col gap-3">
+        {/* Right Side */}
+        <div className="w-[30%] flex flex-col gap-4">
           {/* Logo */}
-          <div className=" p-4 animate-fade-in-down">
-            <div className="flex items-center gap-3">
-             <img src="./DICT-1024x522.webp" className=" h-[120px] object-contain" alt="" />
-            </div>
-          </div>
 
-          {/* Time & Weather Widget - Combined */}
-          <div className="bg-white rounded-xl shadow-xl border-2 border-blue-200 p-4 animate-fade-in-down">
-            <div className="grid grid-cols-2 gap-3">
+          <div className=" flex  flex-row-reverse  gap-2">
+ <a href="https://www.facebook.com/DICTRegion10" target="_blank" className=" w-[70%] h-[80%] self-center bg-white rounded-full flex  p-5 animate-fade-in-down items-center justify-center">
+            <div className="flex items-center justify-center">
+              <img src="./DICT-1024x522.webp" className="h-[100px] object-contain drop-shadow-lg" alt="DICT Logo" />
+            </div>
+          </a>
+
+  <div className="bg-white/95 backdrop-blur-sm w-full rounded-2xl shadow-xl border border-blue-100/50  animate-fade-in-down">
+            <div className="grid grid-cols-1 gap-4">
               {/* Time Section */}
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg">
-                <div className="text-xs font-semibold text-blue-700 mb-1">TIME</div>
-                <div className="text-2xl font-bold text-blue-900 tabular-nums">
-                  {formatTime(currentTime)}
+              {/* <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-4 rounded-xl shadow-lg relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-4 h-4 text-blue-100" />
+                    <div className="text-xs font-bold text-blue-100 uppercase tracking-wide">Time</div>
+                  </div>
+                  <div className="text-3xl font-bold text-white tabular-nums mb-1">
+                    {formatTime(currentTime)}
+                  </div>
+                  <div className="text-xs text-blue-100">
+                    {currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </div>
                 </div>
-                <div className="text-[9px] text-blue-600 mt-0.5">
-                  {currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </div>
-              </div>
+              </div> */}
               
               {/* Weather Section */}
-              <div className="bg-gradient-to-br from-sky-50 to-sky-100 p-3 rounded-lg">
-                <div className="text-xs font-semibold text-sky-700 mb-1 flex items-center gap-1">
-                  <Cloud className="w-3 h-3" />
-                  WEATHER
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-blue-900">{weather?.temperature || 24}°C</div>
-                    <div className="text-[9px] text-blue-600 mt-0.5 capitalize">{weather?.description || 'Loading...'}</div>
+              <div className="bg-gradient-to-br from-sky-400 to-blue-600 p-4 rounded-xl shadow-lg relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                <div className="relative z-10">
+                    
+               
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-3xl font-bold text-white">{weather?.temperature || 24}°C</div>
+                       <div className="flex items-center gap-1.5 text-xs text-sky-100">
+                      <Droplets className="w-3 h-3" />
+                      <span>{weather?.humidity || 65}%</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-xs text-blue-600">💧 {weather?.humidity || 65}%</div>
-                    <div className="text-[9px] text-blue-600 mt-0.5">📍 {weather?.location || 'Unknown'}</div>
+                  <div className="space-y-1">
+                 
+                  
+                      <div className="text-3xl font-bold text-white tabular-nums mb-1">
+                    {formatTime(currentTime)}
+                  </div>
+                  <div className="text-xs text-blue-100">
+                    {currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </div>
+                    <div className="flex items-center gap-1.5 text-xs text-sky-100">
+                      <MapPin className="w-3 h-3" />
+                      <span className="truncate">{weather?.location || 'Unknown'}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Calendar Events & Latest News - Swipeable */}
-          <div className="bg-white rounded-xl shadow-xl border-2 border-blue-200 p-4 animate-fade-in-down overflow-hidden relative">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold text-blue-900 flex items-center gap-2">
+          </div>
+         
+          {/* Time & Weather Widget */}
+        
+
+          {/* Swipeable Panels */}
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100/50 p-5 animate-fade-in-down overflow-hidden relative">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                 {currentPanel === 0 ? (
                   <>
-                    <Calendar className="w-4 h-4" />
-                    Calendar Events
+                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <Calendar className="w-4 h-4 text-white" />
+                    </div>
+                    Events
                   </>
                 ) : currentPanel === 1 ? (
                   <>
-                    <Newspaper className="w-4 h-4" />
-                    Latest News
+                    <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                      <Newspaper className="w-4 h-4 text-white" />
+                    </div>
+                    News
                   </>
                 ) : (
                   <>
-                    <Megaphone className="w-4 h-4" />
+                    <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                      <Megaphone className="w-4 h-4 text-white" />
+                    </div>
                     Announcements
                   </>
                 )}
               </h2>
-              <div className="flex gap-1">
+              <div className="flex gap-1.5">
                 <button
                   onClick={toggleAutoSwipe}
-                  className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
-                    isAutoSwipe ? 'bg-blue-500 text-white' : 'hover:bg-blue-100 text-blue-600'
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                    !isAutoSwipe 
+                      ? 'bg-blue-500 text-white shadow-md' 
+                      : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
                   }`}
                   title={isAutoSwipe ? 'Stop auto-swipe' : 'Start auto-swipe'}
                 >
-                  {isAutoSwipe ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                  {!isAutoSwipe ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
                 </button>
                 <button
                   onClick={prevPanel}
-                  className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-blue-100 transition-colors"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 hover:bg-slate-200 transition-colors"
                 >
-                  <ChevronLeft className="w-4 h-4 text-blue-600" />
+                  <ChevronLeft className="w-4 h-4 text-slate-600" />
                 </button>
                 <button
                   onClick={nextPanel}
-                  className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-blue-100 transition-colors"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 hover:bg-slate-200 transition-colors"
                 >
-                  <ChevronRight className="w-4 h-4 text-blue-600" />
+                  <ChevronRight className="w-4 h-4 text-slate-600" />
                 </button>
               </div>
             </div>
@@ -556,23 +614,26 @@ const Dashboard = () => {
               onTouchEnd={handleTouchEnd}
             >
               <div 
-                className="flex transition-transform duration-300 ease-in-out"
+                className="flex transition-transform duration-500 ease-out"
                 style={{ transform: `translateX(-${currentPanel * 100}%)` }}
               >
                 {/* Panel 1: Calendar Events */}
                 <div className="w-full flex-shrink-0">
-                  <div className="border-t-2 border-dashed border-blue-300 pt-3 space-y-2 max-h-[160px] overflow-y-auto">
-                    {events.slice(0, 3).map((event, index) => (
+                  <div className="space-y-2.5 max-h-[300px] overflow-y-auto custom-scrollbar">
+                    {events.slice(0, 4).map((event, index) => (
                       <div
                         key={index}
-                        className="group bg-gradient-to-r from-blue-50 to-white p-3 rounded-lg border-l-4 border-blue-500 hover:border-blue-700 hover:shadow-md transition-all duration-300"
+                        className="group bg-gradient-to-r from-blue-50 to-white p-4 rounded-lg border-l-4 border-blue-500 hover:border-blue-600 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
                       >
-                        <h3 className="text-sm font-semibold text-blue-900 group-hover:text-blue-700">
+                        <h3 className="text-sm font-bold text-slate-800 group-hover:text-blue-700 mb-2">
                           {event.title}
                         </h3>
-                        <div className="flex justify-between items-center mt-1">
-                          <p className="text-[10px] text-blue-600">{event.date}</p>
-                          <span className="px-2 py-0.5 bg-blue-500 text-white rounded-full text-[10px] font-medium">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                            <Calendar className="w-3 h-3" />
+                            {event.date}
+                          </div>
+                          <span className="px-2.5 py-1 bg-blue-500 text-white rounded-lg text-xs font-semibold shadow-sm">
                             {event.time}
                           </span>
                         </div>
@@ -583,21 +644,20 @@ const Dashboard = () => {
 
                 {/* Panel 2: Latest News */}
                 <div className="w-full flex-shrink-0">
-                  <div className="border-t-2 border-dashed border-blue-300 pt-3 space-y-2 max-h-[160px] overflow-y-auto">
+                  <div className="space-y-2.5 max-h-[300px] overflow-y-auto custom-scrollbar">
                     {news.map((item, index) => (
                       <div
                         key={index}
-                        className="group bg-gradient-to-r from-green-50 to-white p-3 rounded-lg border-l-4 border-green-500 hover:border-green-700 hover:shadow-md transition-all duration-300"
+                        className="group bg-white rounded-lg border border-emerald-200 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 overflow-hidden"
                       >
-                        <h3 className="text-sm font-semibold text-blue-900 group-hover:text-blue-700">
-                          {item.title}
-                        </h3>
-                        <div className="flex justify-between items-center mt-1">
-                          <p className="text-[10px] text-blue-600">{item.date}</p>
-                          <span className="px-2 py-0.5 bg-green-500 text-white rounded-full text-[10px] font-medium">
-                            {item.category}
-                          </span>
-                        </div>
+                        <iframe
+                          src={`https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(item.postUrl)}&show_text=true&width=500`}
+                          className="w-full h-[400px] border-0"
+                          scrolling="no"
+                          frameBorder="0"
+                          allowFullScreen={true}
+                          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                        ></iframe>
                       </div>
                     ))}
                   </div>
@@ -605,21 +665,24 @@ const Dashboard = () => {
 
                 {/* Panel 3: Announcements */}
                 <div className="w-full flex-shrink-0">
-                  <div className="border-t-2 border-dashed border-blue-300 pt-3 space-y-2 max-h-[160px] overflow-y-auto">
+                  <div className="space-y-2.5 max-h-[300px] overflow-y-auto custom-scrollbar">
                     {announcements.map((item, index) => (
                       <div
                         key={index}
-                        className="group bg-gradient-to-r from-orange-50 to-white p-3 rounded-lg border-l-4 border-orange-500 hover:border-orange-700 hover:shadow-md transition-all duration-300"
+                        className="group bg-gradient-to-r from-orange-50 to-white p-4 rounded-lg border-l-4 border-orange-500 hover:border-orange-600 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
                       >
-                        <h3 className="text-sm font-semibold text-blue-900 group-hover:text-blue-700">
+                        <h3 className="text-sm font-bold text-slate-800 group-hover:text-orange-700 mb-2">
                           {item.title}
                         </h3>
-                        <div className="flex justify-between items-center mt-1">
-                          <p className="text-[10px] text-blue-600">{item.date}</p>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                            <Calendar className="w-3 h-3" />
+                            {item.date}
+                          </div>
+                          <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold shadow-sm ${
                             item.priority === 'High' ? 'bg-red-500 text-white' :
-                            item.priority === 'Medium' ? 'bg-yellow-500 text-white' :
-                            'bg-gray-500 text-white'
+                            item.priority === 'Medium' ? 'bg-amber-500 text-white' :
+                            'bg-slate-400 text-white'
                           }`}>
                             {item.priority}
                           </span>
@@ -632,15 +695,15 @@ const Dashboard = () => {
             </div>
 
             {/* Panel Indicators */}
-            <div className="flex justify-center gap-2 mt-3">
+            <div className="flex justify-center gap-2 mt-4">
               {[0, 1, 2].map((index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentPanel(index)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                  className={`h-2 rounded-full transition-all duration-300 ${
                     index === currentPanel 
-                      ? 'w-6 bg-blue-600' 
-                      : 'w-1.5 bg-blue-300 hover:bg-blue-400'
+                      ? 'w-8 bg-blue-600' 
+                      : 'w-2 bg-slate-300 hover:bg-slate-400'
                   }`}
                 />
               ))}
@@ -648,8 +711,45 @@ const Dashboard = () => {
           </div>
 
           {/* YouTube Video Carousel */}
-          <div className="flex-1 bg-white rounded-xl shadow-xl border-2 border-blue-200 p-4 flex flex-col animate-fade-in-up min-h-[250px]">
-            <div className="flex-1 relative rounded-lg overflow-hidden bg-black group">
+          <div className="flex-1 bg-white from-white via-blue-50/30 to-indigo-50/30 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100/50 p-4 pb-2 flex flex-col animate-fade-in-up min-h-[320px]">
+            {/* Compact Header */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-md">
+                  <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-800">Featured Videos</h3>
+                </div>
+              </div>
+              {/* <span className="px-2.5 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-bold">
+                {currentVideoIndex + 1}/{videoIds.length}
+              </span> */}
+                <div>
+
+                </div>
+                <div className=" flex gap-3">
+                      <button
+                  onClick={prevVideo}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 hover:bg-slate-200 transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4 text-slate-600" />
+                </button>
+                <button
+                  onClick={nextVideo}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 hover:bg-slate-200 transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4 text-slate-600" />
+                </button>
+                </div>
+                 
+          
+            </div>
+
+            {/* Larger Video Container */}
+            <div className="flex-1 relative rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 shadow-2xl ring-1 ring-black/5">
               <iframe
                 key={currentVideoIndex}
                 className="w-full h-full"
@@ -659,39 +759,33 @@ const Dashboard = () => {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               ></iframe>
-              
-              {/* Navigation Buttons */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <Button
-                  onClick={prevVideo}
-                  size="icon"
-                  className="bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg h-9 w-9"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <Button
-                  onClick={nextVideo}
-                  size="icon"
-                  className="bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg h-9 w-9"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
             </div>
 
-            {/* Video Indicator */}
-            <div className="flex justify-center gap-2 mt-3">
+     
+
+            {/* Enhanced Video Indicators */}
+            <div className="flex items-center justify-center gap-2 mt-2">
+            
               {videoIds.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentVideoIndex(index)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    index === currentVideoIndex 
-                      ? 'w-6 bg-blue-600' 
-                      : 'w-1.5 bg-blue-300 hover:bg-blue-400'
+                  className={`group relative transition-all duration-300 ${
+                    index === currentVideoIndex ? 'w-10' : 'w-2.5'
                   }`}
-                />
+                >
+                  <div className={`h-2 rounded-full transition-all duration-300 ${
+                    index === currentVideoIndex 
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/50' 
+                      : 'bg-slate-300 group-hover:bg-slate-400 group-hover:scale-125'
+                  }`} />
+                  {index === currentVideoIndex && (
+                    <div className="absolute inset-0 bg-blue-400 rounded-full animate-ping opacity-20" />
+                  )}
+                </button>
               ))}
+
+           
             </div>
           </div>
         </div>
@@ -752,12 +846,22 @@ const Dashboard = () => {
           animation: fade-in-up 0.6s ease-out;
         }
 
-        .animate-bounce-slow {
-          animation: bounce 3s infinite;
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
         }
 
-        .animate-pulse-subtle {
-          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
         }
       `}</style>
     </div>
