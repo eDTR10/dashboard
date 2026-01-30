@@ -4,6 +4,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
 
+import eGov from "../assets/eGovPH Logo.png"
+import eLGU from "../assets/eLGU Logo.png"
+import Lakip from "../assets/lakip.png"
+import FreeWiFi from "../assets/Free WiFi.png"
+import IIDB from "../assets/iidb.png"
+import ILCDB from "../assets/ilcdb.png"
+import CyberSec from "../assets/cyber-sec.png"
+import NBP from "../assets/nbp.png"
+import PNPKI from "../assets/PNPKI.jpg"
+import NIPPSB from "../assets/NIPPSB.png"
 
 interface CitizenService {
   id: string
@@ -321,16 +331,16 @@ const Dashboard = () => {
       {/* DICT Projects Marquee */}
       <div className="w-full  bg-white/80 py-3 px-2 flex items-center justify-center shadow-md mb-4 animate-fade-in-down">
         <div className="flex items-center justify-center gap-16 w-full max-w-6xl mx-auto">
-          <img src="/src/assets/eGovPH Logo.png" alt="eGov PH" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 0 ? 'animate-wiggle' : ''}`} />
-          <img src="/src/assets/eLGU Logo.png" alt="eLGU" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 1 ? 'animate-wiggle' : ''}`} />
-          <img src="/src/assets/lakip.png" alt="Lakip" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 2 ? 'animate-wiggle' : ''}`} />
-          <img src="/src/assets/Free WiFi.png" alt="Free WiFi For All" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 3 ? 'animate-wiggle' : ''}`} />
-          <img src="/src/assets/iidb.png" alt="IIDB" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 4 ? 'animate-wiggle' : ''}`} />
-          <img src="/src/assets/ilcdb.png" alt="ILCDB" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 5 ? 'animate-wiggle' : ''}`} />
-          <img src="/src/assets/cyber-sec.png" alt="Cybersecurity" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 6 ? 'animate-wiggle' : ''}`} />
-          <img src="/src/assets/nbp.png" alt="National Broadband Plan" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 7 ? 'animate-wiggle' : ''}`} />
-          <img src="/src/assets/PNPKI.jpg" alt="Philippine National PKI" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 8 ? 'animate-wiggle' : ''}`} />
-          <img src="/src/assets/NIPPSB.png" alt="ICT Planning, Policy and Standards" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 9 ? 'animate-wiggle' : ''}`} />
+          <img src={eGov} alt="eGov PH" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 0 ? 'animate-wiggle' : ''}`} />
+          <img src={eLGU} alt="eLGU" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 1 ? 'animate-wiggle' : ''}`} />
+          <img src={Lakip} alt="Lakip" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 2 ? 'animate-wiggle' : ''}`} />
+          <img src={FreeWiFi} alt="Free WiFi For All" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 3 ? 'animate-wiggle' : ''}`} />
+          <img src={IIDB} alt="IIDB" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 4 ? 'animate-wiggle' : ''}`} />
+          <img src={ILCDB} alt="ILCDB" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 5 ? 'animate-wiggle' : ''}`} />
+          <img src={CyberSec} alt="Cybersecurity" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 6 ? 'animate-wiggle' : ''}`} />
+          <img src={NBP} alt="National Broadband Plan" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 7 ? 'animate-wiggle' : ''}`} />
+          <img src={PNPKI} alt="Philippine National PKI" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 8 ? 'animate-wiggle' : ''}`} />
+          <img src={NIPPSB} alt="ICT Planning, Policy and Standards" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 9 ? 'animate-wiggle' : ''}`} />
         </div>
       </div>
       <div className="h-[calc(100%-120px)] w-full flex gap-5 p-5 pt-0">
