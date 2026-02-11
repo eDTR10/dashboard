@@ -31,6 +31,14 @@ interface WeatherData {
   location: string
 }
 
+// Sample YouTube videos with duration - defined outside component to prevent recreating on each render
+// Duration is in seconds
+const videos = [
+  { id: "_PdnRgVc19w", duration: 210 }, // 3:30 minutes
+  { id: "6tM6SfzhcrA", duration: 94 }, // 1:34 minutes
+  { id: "dofoQn3X-20", duration: 102 }  // 1:42 minutes
+]
+
 const Dashboard = () => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -41,7 +49,17 @@ const Dashboard = () => {
   const [touchEnd, setTouchEnd] = useState(0)
   const [isAutoSwipe, setIsAutoSwipe] = useState(true)
   const [weather, setWeather] = useState<WeatherData | null>(null)
+  const [selectedNews, setSelectedNews] = useState<typeof news[0] | null>(null)
+  const [showNewsScrollHint, setShowNewsScrollHint] = useState(true)
+  const [showEventsScrollHint, setShowEventsScrollHint] = useState(true)
+  const [showAnnouncementsScrollHint, setShowAnnouncementsScrollHint] = useState(true)
+  const [showKeyboard, setShowKeyboard] = useState(false)
   const autoSwipeTimer = useRef<NodeJS.Timeout | null>(null)
+  const videoAutoNextTimer = useRef<NodeJS.Timeout | null>(null)
+  const newsScrollRef = useRef<HTMLDivElement>(null)
+  const eventsScrollRef = useRef<HTMLDivElement>(null)
+  const announcementsScrollRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   // For logo wiggle animation
   const [activeLogo, setActiveLogo] = useState(0)
@@ -53,13 +71,6 @@ const Dashboard = () => {
     return () => clearInterval(logoInterval)
   }, [])
 
-  // Sample YouTube video IDs - replace with your actual videos
-  const videoIds = [
-    "_PdnRgVc19w",
-    "6tM6SfzhcrA",
-    "kJQP7kiw5Fk"
-  ]
-
   const events = [
     { date: "Feb 1, 2026", title: "Team Meeting", time: "10:00 AM" },
     { date: "Feb 3, 2026", title: "Project Review", time: "2:00 PM" },
@@ -70,10 +81,22 @@ const Dashboard = () => {
 
   const news = [
     {
-      date: "Jan 20, 2026",
-      title: "eGovPH Update",
+      date: "Jan 30, 2026",
+      title: "DICT Launches New E-Government Portal",
       category: "Technology",
-      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02Xw3fy4yLPGAfVja9t9v77xYrumbQVrcQvruZfSXyMxbDDLvBSwfyAw32B8854MkPl"
+      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid03PeXr1qK2KCrxychWwBFmZxJCJDvFvbavGjKfSmDvmPCNACFJYoYhnBNLPtFaGuNl?rdid=KtQ7kgvJ6MBUYzT9#"
+    },
+    {
+      date: "Jan 28, 2026",
+      title: "DICT Partners with Local Governments for Digital Transformation",
+      category: "Partnership",
+      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02uHVjw5uDXdBS63gZa7nQRBKtWcDCSfKQV5Rh4QEhC43sPbSrPvwAMpJdCJa73a9wl?rdid=XFXCv1fck1IsC4mH#"
+    },
+    {
+      date: "Jan 25, 2026",
+      title: "Cybersecurity Awareness Campaign",
+      category: "Security",
+      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02G45UmyHuSeTTEE3FE4u1EwVz7rwqmx3RsUSfFtTPAXoeK7m6YNXAK7tAkyidytBTl"
     },
     {
       date: "Jan 28, 2026",
@@ -82,10 +105,10 @@ const Dashboard = () => {
       postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid0259kWuHjiLx8DLxdw3fo7MgqRNqmnt1pwdKtQcnSRMt2qCk9YekXwKE8P6VaJ2cJEl"
     },
     {
-      date: "Jan 25, 2026",
-      title: "Cybersecurity Awareness Campaign",
-      category: "Security",
-      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02G45UmyHuSeTTEE3FE4u1EwVz7rwqmx3RsUSfFtTPAXoeK7m6YNXAK7tAkyidytBTl"
+      date: "Jan 20, 2026",
+      title: "eGovPH Update",
+      category: "Technology",
+      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02Xw3fy4yLPGAfVja9t9v77xYrumbQVrcQvruZfSXyMxbDDLvBSwfyAw32B8854MkPl"
     },
     {
       date: "Jan 22, 2026",
@@ -248,12 +271,34 @@ const Dashboard = () => {
     return () => clearInterval(timer)
   }, [])
 
+  // Auto-next video functionality
+  useEffect(() => {
+    // Clear any existing timer
+    if (videoAutoNextTimer.current) {
+      clearTimeout(videoAutoNextTimer.current)
+    }
+
+    // Set up timer to auto-advance to next video when current video ends
+    // Add 3 seconds buffer to account for video loading time
+    const videoDuration = videos[currentVideoIndex].duration
+    videoAutoNextTimer.current = setTimeout(() => {
+      setCurrentVideoIndex((prev) => (prev + 1) % videos.length)
+    }, (videoDuration + 3) * 1000)
+
+    // Cleanup on unmount or when video changes
+    return () => {
+      if (videoAutoNextTimer.current) {
+        clearTimeout(videoAutoNextTimer.current)
+      }
+    }
+  }, [currentVideoIndex])
+
   // Auto-swipe functionality
   useEffect(() => {
     if (isAutoSwipe) {
       autoSwipeTimer.current = setInterval(() => {
         setCurrentPanel((prev) => (prev + 1) % totalPanels)
-      }, 5000)
+      }, 10000)
     } else {
       if (autoSwipeTimer.current) {
         clearInterval(autoSwipeTimer.current)
@@ -268,11 +313,11 @@ const Dashboard = () => {
   }, [isAutoSwipe, totalPanels])
 
   const nextVideo = () => {
-    setCurrentVideoIndex((prev) => (prev + 1) % videoIds.length)
+    setCurrentVideoIndex((prev) => (prev + 1) % videos.length)
   }
 
   const prevVideo = () => {
-    setCurrentVideoIndex((prev) => (prev - 1 + videoIds.length) % videoIds.length)
+    setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length)
   }
 
   const handleSearch = () => {
@@ -316,12 +361,138 @@ const Dashboard = () => {
     setIsAutoSwipe((prev) => !prev)
   }
 
+  const handleNewsScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const element = e.currentTarget
+    const isScrollable = element.scrollHeight > element.clientHeight
+    const isAtBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 10
+    
+    if (!isScrollable || isAtBottom) {
+      setShowNewsScrollHint(false)
+    } else if (element.scrollTop === 0) {
+      setShowNewsScrollHint(true)
+    }
+  }
+
+  const handleEventsScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const element = e.currentTarget
+    const isScrollable = element.scrollHeight > element.clientHeight
+    const isAtBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 10
+    
+    if (!isScrollable || isAtBottom) {
+      setShowEventsScrollHint(false)
+    } else if (element.scrollTop === 0) {
+      setShowEventsScrollHint(true)
+    }
+  }
+
+  const handleAnnouncementsScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const element = e.currentTarget
+    const isScrollable = element.scrollHeight > element.clientHeight
+    const isAtBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 10
+    
+    if (!isScrollable || isAtBottom) {
+      setShowAnnouncementsScrollHint(false)
+    } else if (element.scrollTop === 0) {
+      setShowAnnouncementsScrollHint(true)
+    }
+  }
+
+  // Auto-scroll animation to hint users they can scroll - News
+  useEffect(() => {
+    if (showNewsScrollHint && currentPanel === 1 && newsScrollRef.current) {
+      const scrollElement = newsScrollRef.current
+      let scrollInterval: NodeJS.Timeout
+
+      // Wait a moment before starting the animation
+      const startDelay = setTimeout(() => {
+        scrollInterval = setInterval(() => {
+          if (scrollElement.scrollTop === 0) {
+            // Scroll down slightly
+            scrollElement.scrollTo({ top: 15, behavior: 'smooth' })
+            // Then scroll back up after a short delay
+            setTimeout(() => {
+              scrollElement.scrollTo({ top: 0, behavior: 'smooth' })
+            }, 800)
+          }
+        }, 2500) // Repeat every 2.5 seconds
+      }, 1000) // Start after 1 second
+
+      return () => {
+        clearTimeout(startDelay)
+        if (scrollInterval) clearInterval(scrollInterval)
+      }
+    }
+  }, [showNewsScrollHint, currentPanel])
+
+  // Auto-scroll animation to hint users they can scroll - Events
+  useEffect(() => {
+    if (showEventsScrollHint && currentPanel === 0 && eventsScrollRef.current) {
+      const scrollElement = eventsScrollRef.current
+      let scrollInterval: NodeJS.Timeout
+
+      const startDelay = setTimeout(() => {
+        scrollInterval = setInterval(() => {
+          if (scrollElement.scrollTop === 0) {
+            scrollElement.scrollTo({ top: 15, behavior: 'smooth' })
+            setTimeout(() => {
+              scrollElement.scrollTo({ top: 0, behavior: 'smooth' })
+            }, 800)
+          }
+        }, 2500)
+      }, 1000)
+
+      return () => {
+        clearTimeout(startDelay)
+        if (scrollInterval) clearInterval(scrollInterval)
+      }
+    }
+  }, [showEventsScrollHint, currentPanel])
+
+  // Auto-scroll animation to hint users they can scroll - Announcements
+  useEffect(() => {
+    if (showAnnouncementsScrollHint && currentPanel === 2 && announcementsScrollRef.current) {
+      const scrollElement = announcementsScrollRef.current
+      let scrollInterval: NodeJS.Timeout
+
+      const startDelay = setTimeout(() => {
+        scrollInterval = setInterval(() => {
+          if (scrollElement.scrollTop === 0) {
+            scrollElement.scrollTo({ top: 15, behavior: 'smooth' })
+            setTimeout(() => {
+              scrollElement.scrollTo({ top: 0, behavior: 'smooth' })
+            }, 800)
+          }
+        }, 2500)
+      }, 1000)
+
+      return () => {
+        clearTimeout(startDelay)
+        if (scrollInterval) clearInterval(scrollInterval)
+      }
+    }
+  }, [showAnnouncementsScrollHint, currentPanel])
+
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit'
     })
+  }
+
+  const handleKeyPress = (key: string) => {
+    if (key === 'Backspace') {
+      setSearchQuery(prev => prev.slice(0, -1))
+    } else if (key === 'Space') {
+      setSearchQuery(prev => prev + ' ')
+    } else if (key === 'Clear') {
+      setSearchQuery('')
+    } else if (key === 'Close') {
+      setShowKeyboard(false)
+      searchInputRef.current?.blur()
+    } else {
+      setSearchQuery(prev => prev + key)
+    }
   }
 
 
@@ -367,10 +538,12 @@ const Dashboard = () => {
                 <div className="relative">
                   <Search className="absolute z-30 left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-600" />
                   <Input
+                    ref={searchInputRef}
                     type="text"
                     placeholder="Search services by name or category..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setShowKeyboard(true)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                     className="w-full h-12 pl-12 pr-4 text-base bg-white/90 backdrop-blur-sm border-0 focus:ring-2 focus:ring-white/50 rounded-xl shadow-lg placeholder:text-blue-300"
                   />
@@ -693,8 +866,12 @@ const Dashboard = () => {
                 style={{ transform: `translateX(-${currentPanel * 100}%)` }}
               >
                 {/* Panel 1: Calendar Events */}
-                <div className="w-full flex-shrink-0">
-                  <div className="space-y-2.5 max-h-[200px] overflow-y-auto custom-scrollbar">
+                <div className="w-full flex-shrink-0 relative">
+                  <div 
+                    ref={eventsScrollRef}
+                    className="space-y-2.5 max-h-[200px] overflow-y-auto custom-scrollbar"
+                    onScroll={handleEventsScroll}
+                  >
                     {events.slice(0, 4).map((event, index) => (
                       <div
                         key={index}
@@ -715,19 +892,43 @@ const Dashboard = () => {
                       </div>
                     ))}
                   </div>
+                  {/* Scroll Indicator */}
+                  {showEventsScrollHint && currentPanel === 0 && (
+                    <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none flex items-end justify-center pb-1 animate-fade-in">
+                      <div className="animate-bounce-slow">
+                        <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Panel 2: Latest News */}
-                <div className="w-full flex-shrink-0">
-                  <div className="space-y-2.5 max-h-[200px] overflow-y-auto custom-scrollbar">
+                <div className="w-full flex-shrink-0 relative">
+                  <div 
+                    ref={newsScrollRef}
+                    className="space-y-2.5 max-h-[200px] overflow-y-auto custom-scrollbar"
+                    onScroll={handleNewsScroll}
+                  >
                     {news.map((item, index) => (
                       <div
                         key={index}
-                        className="group bg-white rounded-lg border border-emerald-200 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 overflow-hidden"
+                        onClick={() => setSelectedNews(item)}
+                        className="group cursor-pointer bg-white rounded-lg border border-emerald-200 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 overflow-hidden relative"
                       >
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 opacity-1 group-hover:opacity-100 transition-opacity z-10 flex items-end justify-center pb-2">
+                          <span className="text-white text-xs font-semibold flex items-center gap-1">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Click to view full post
+                          </span>
+                        </div>
                         <iframe
-                          src={`https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(item.postUrl)}&show_text=true&width=500`}
-                          className="w-full h-[400px] border-0"
+                          src={`https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(item.postUrl)}&show_text=true&width=350`}
+                          className="w-full h-[180px] border-0 pointer-events-none"
                           scrolling="no"
                           frameBorder="0"
                           allowFullScreen={true}
@@ -736,11 +937,25 @@ const Dashboard = () => {
                       </div>
                     ))}
                   </div>
+                  {/* Scroll Indicator */}
+                  {showNewsScrollHint && currentPanel === 1 && (
+                    <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none flex items-end justify-center pb-1 animate-fade-in">
+                      <div className="animate-bounce-slow">
+                        <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Panel 3: Announcements */}
-                <div className="w-full flex-shrink-0">
-                  <div className="space-y-2.5 max-h-[200px] overflow-y-auto custom-scrollbar">
+                <div className="w-full flex-shrink-0 relative">
+                  <div 
+                    ref={announcementsScrollRef}
+                    className="space-y-2.5 max-h-[200px] overflow-y-auto custom-scrollbar"
+                    onScroll={handleAnnouncementsScroll}
+                  >
                     {announcements.map((item, index) => (
                       <div
                         key={index}
@@ -764,6 +979,16 @@ const Dashboard = () => {
                       </div>
                     ))}
                   </div>
+                  {/* Scroll Indicator */}
+                  {showAnnouncementsScrollHint && currentPanel === 2 && (
+                    <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none flex items-end justify-center pb-1 animate-fade-in">
+                      <div className="animate-bounce-slow">
+                        <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -817,7 +1042,7 @@ const Dashboard = () => {
               <iframe
                 key={currentVideoIndex}
                 className="w-full h-full"
-                src={`https://www.youtube.com/embed/${videoIds[currentVideoIndex]}?autoplay=1&rel=0&enablejsapi=1`}
+                src={`https://www.youtube.com/embed/${videos[currentVideoIndex].id}?autoplay=1&mute=0&rel=0&enablejsapi=1&controls=1&modestbranding=1`}
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -826,7 +1051,7 @@ const Dashboard = () => {
             </div>
             {/* Enhanced Video Indicators */}
             <div className="flex items-center justify-center gap-2 mt-2">
-              {videoIds.map((_, index) => (
+              {videos.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentVideoIndex(index)}
@@ -845,6 +1070,152 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      
+
+      {/* Virtual Keyboard */}
+      {showKeyboard && (
+        <div className="fixed inset-0 bg-black/30  z-50 flex items-end justify-center animate-fade-in" onClick={() => setShowKeyboard(false)}>
+          <div className="bg-white w-full max-w-4xl rounded-t-3xl shadow-2xl p-6 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <Search className="w-5 h-5 text-blue-600" />
+                Virtual Keyboard
+              </h3>
+              <button
+                onClick={() => setShowKeyboard(false)}
+                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+              >
+                <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Search Preview */}
+            <div className="mb-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-200">
+              <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
+                <Search className="w-4 h-4" />
+                <span>Search Query:</span>
+              </div>
+              <div className="text-xl font-semibold text-slate-800 min-h-[32px]">
+                {searchQuery || <span className="text-slate-400">Start typing...</span>}
+              </div>
+            </div>
+
+            {/* Keyboard Layout */}
+            <div className="space-y-2">
+              {/* Row 1 */}
+              <div className="flex gap-2 justify-center">
+                {['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'].map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => handleKeyPress(key.toLowerCase())}
+                    className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all duration-150"
+                  >
+                    {key}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Row 2 */}
+              <div className="flex gap-2 justify-center">
+                {['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'].map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => handleKeyPress(key.toLowerCase())}
+                    className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all duration-150"
+                  >
+                    {key}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Row 3 */}
+              <div className="flex gap-2 justify-center">
+                {['Z', 'X', 'C', 'V', 'B', 'N', 'M'].map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => handleKeyPress(key.toLowerCase())}
+                    className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all duration-150"
+                  >
+                    {key}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Row 4 - Special Keys */}
+              <div className="flex gap-2 justify-center">
+                <button
+                  onClick={() => handleKeyPress('Clear')}
+                  className="w-20 h-12 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all duration-150 text-sm"
+                >
+                  Clear
+                </button>
+                <button
+                  onClick={() => handleKeyPress('Space')}
+                  className="flex-1 h-12 bg-gradient-to-br from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all duration-150"
+                >
+                  Space
+                </button>
+                <button
+                  onClick={() => handleKeyPress('Backspace')}
+                  className="w-20 h-12 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all duration-150 text-sm"
+                >
+                  ← Back
+                </button>
+                <button
+                  onClick={() => handleKeyPress('Close')}
+                  className="w-20 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all duration-150 text-sm"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating News Window */}
+      {selectedNews && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in" onClick={() => setSelectedNews(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[95vh] overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white">{selectedNews.title}</h2>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-emerald-100 text-sm flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {selectedNews.date}
+                  </span>
+                  <span className="px-2 py-0.5 bg-white/20 text-white rounded text-xs font-semibold">
+                    {selectedNews.category}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedNews(null)}
+                className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+              >
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="overflow-y-auto custom-scrollbar bg-gray-50 p-4" style={{ maxHeight: 'calc(95vh - 100px)' }}>
+              <iframe
+                src={`https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(selectedNews.postUrl)}&show_text=true&width=600`}
+                className="w-full border-0 bg-white rounded-lg"
+                style={{ minHeight: '800px' }}
+                frameBorder="0"
+                sandbox="allow-scripts allow-same-origin allow-forms"
+                allowFullScreen={true}
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+        
+      )}
 
       <style>{`
         @keyframes wiggle {
@@ -921,6 +1292,21 @@ const Dashboard = () => {
           animation: fade-in-up 0.6s ease-out;
         }
 
+        @keyframes slide-up {
+          from {
+            opacity: 0;
+            transform: translateY(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out;
+        }
+
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
@@ -928,6 +1314,19 @@ const Dashboard = () => {
         .custom-scrollbar::-webkit-scrollbar-track {
           background: #f1f5f9;
           border-radius: 10px;
+        }
+
+        @keyframes bounce-slow {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-8px);
+          }
+        }
+
+        .animate-bounce-slow {
+          animation: bounce-slow 2s ease-in-out infinite;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
