@@ -14,6 +14,7 @@ import CyberSec from "../assets/cyber-sec.png"
 import NBP from "../assets/nbp.png"
 import PNPKI from "../assets/PNPKI.jpg"
 import NIPPSB from "../assets/NIPPSB.png"
+import { time } from "console"
 
 interface CitizenService {
   id: string
@@ -73,6 +74,8 @@ const Dashboard = () => {
     { id: "6tM6SfzhcrA", duration: 94 },
     { id: "dofoQn3X-20", duration: 102 }
   ])
+  const [events, setEvents] = useState<EventItem[]>([])
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([])
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementItem | null>(null)
@@ -100,59 +103,126 @@ const Dashboard = () => {
     return () => clearInterval(logoInterval)
   }, [])
 
-  const events: EventItem[] = [
-    { 
-      date: "Feb 1, 2026", 
-      title: "Team Meeting", 
-      time: "10:00 AM",
-      description: "Monthly team meeting to discuss ongoing projects, updates, and upcoming initiatives. All team members are expected to attend and provide status updates on their assigned tasks."
-    },
-    { 
-      date: "Feb 3, 2026", 
-      title: "Project Review", 
-      time: "2:00 PM",
-      description: "Comprehensive review of the current project status, milestones achieved, and next steps. Stakeholders will evaluate progress and discuss any challenges or roadblocks."
-    },
-    { 
-      date: "Feb 5, 2026", 
-      title: "Client Presentation", 
-      time: "11:30 AM",
-      description: "Formal presentation to clients showcasing project deliverables, progress reports, and future implementation plans. Q&A session will follow the presentation."
-    },
-    { 
-      date: "Feb 8, 2026", 
-      title: "Workshop", 
-      time: "3:00 PM",
-      description: "Interactive training workshop focused on new technologies and best practices. Participants will gain hands-on experience and practical knowledge applicable to their daily work."
-    },
-    { 
-      date: "Feb 10, 2026", 
-      title: "Department Sync", 
-      time: "9:00 AM",
-      description: "Inter-department synchronization meeting to align goals, share updates, and coordinate cross-functional activities. Key decision-makers from all departments will attend."
-    },
-  ]
+  // Fetch events from Google Sheets
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const SHEET_ID = '1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY'
+        const SHEET_NAME = 'events'
+        const API_KEY = import.meta.env.VITE_GOOGLE_KEY
+        
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D?key=${API_KEY}`
+        
+        const response = await axios.get(url)
+        
+        if (response.data && response.data.values && response.data.values.length > 0) {
+          const eventsData: EventItem[] = response.data.values.map((row: string[]) => ({
+            date: row[2] || '',
+            title: row[0] || '',
+            time: row[3] || '',
+            description: row[1] || ''
+          }))
+          
+          setEvents(eventsData)
+        }
+      } catch (error) {
+        console.error('Google Sheets Events API error:', error)
+        // Fallback to default events if API fails
+        setEvents([
+          { 
+            date: "Feb 1, 2026", 
+            title: "Team Meeting", 
+            time: "10:00 AM",
+            description: "Monthly team meeting to discuss ongoing projects, updates, and upcoming initiatives. All team members are expected to attend and provide status updates on their assigned tasks."
+          },
+          { 
+            date: "Feb 3, 2026", 
+            title: "Project Review", 
+            time: "2:00 PM",
+            description: "Comprehensive review of the current project status, milestones achieved, and next steps. Stakeholders will evaluate progress and discuss any challenges or roadblocks."
+          },
+          { 
+            date: "Feb 5, 2026", 
+            title: "Client Presentation", 
+            time: "11:30 AM",
+            description: "Formal presentation to clients showcasing project deliverables, progress reports, and future implementation plans. Q&A session will follow the presentation."
+          },
+          { 
+            date: "Feb 8, 2026", 
+            title: "Workshop", 
+            time: "3:00 PM",
+            description: "Interactive training workshop focused on new technologies and best practices. Participants will gain hands-on experience and practical knowledge applicable to their daily work."
+          },
+          { 
+            date: "Feb 10, 2026", 
+            title: "Department Sync", 
+            time: "9:00 AM",
+            description: "Inter-department synchronization meeting to align goals, share updates, and coordinate cross-functional activities. Key decision-makers from all departments will attend."
+          },
+        ])
+      }
+    }
 
-  const announcements: AnnouncementItem[] = [
-    { 
-      date: "Jan 30, 2026", 
-      title: "Office Closure for National Holiday", 
-      priority: "High",
-      description: "The office will be closed in observance of the national holiday. All operations will resume on the next working day. Emergency contact information is available on the company portal."
-    },
-    { 
-      date: "Jan 29, 2026", 
-      title: "System Maintenance Scheduled", 
-      priority: "Medium",
-      description: "Scheduled system maintenance will be performed to upgrade infrastructure and improve performance. Some services may be temporarily unavailable during the maintenance window. Please save your work regularly."
-    },
-    { 
-      date: "Jan 27, 2026", 
-      title: "New Service Window Hours", 
-      priority: "Low",
-      description: "Service window hours have been updated to better accommodate client needs. The new schedule will be effective immediately. Please check the updated hours on the website or contact reception for details."
-    },
-  ]
+    fetchEvents()
+    // Refresh events every 5 minutes
+    const eventsInterval = setInterval(fetchEvents, 300000)
+    return () => clearInterval(eventsInterval)
+  }, [])
+
+  // Fetch announcements from Google Sheets
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const SHEET_ID = '1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY'
+        const SHEET_NAME = 'announcements'
+        const API_KEY = import.meta.env.VITE_GOOGLE_KEY
+        
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D?key=${API_KEY}`
+        
+        const response = await axios.get(url)
+        
+        if (response.data && response.data.values && response.data.values.length > 0) {
+          const announcementsData: AnnouncementItem[] = response.data.values.map((row: string[]) => ({
+            date: row[3] || '',
+            time: row[4] || '',
+            title: row[0] || '',
+            priority: row[2] || '',
+            description: row[1] || ''
+          }))
+          
+          setAnnouncements(announcementsData)
+        }
+      } catch (error) {
+        console.error('Google Sheets Announcements API error:', error)
+        // Fallback to default announcements if API fails
+        setAnnouncements([
+          { 
+            date: "Jan 30, 2026", 
+            title: "Office Closure for National Holiday", 
+            priority: "High",
+            description: "The office will be closed in observance of the national holiday. All operations will resume on the next working day. Emergency contact information is available on the company portal."
+          },
+          { 
+            date: "Jan 29, 2026", 
+            title: "System Maintenance Scheduled", 
+            priority: "Medium",
+            description: "Scheduled system maintenance will be performed to upgrade infrastructure and improve performance. Some services may be temporarily unavailable during the maintenance window. Please save your work regularly."
+          },
+          { 
+            date: "Jan 27, 2026", 
+            title: "New Service Window Hours", 
+            priority: "Low",
+            description: "Service window hours have been updated to better accommodate client needs. The new schedule will be effective immediately. Please check the updated hours on the website or contact reception for details."
+          },
+        ])
+      }
+    }
+
+    fetchAnnouncements()
+    // Refresh announcements every 5 minutes
+    const announcementsInterval = setInterval(fetchAnnouncements, 300000)
+    return () => clearInterval(announcementsInterval)
+  }, [])
 
   const totalPanels = 3
 
