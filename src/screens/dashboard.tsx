@@ -76,6 +76,7 @@ const Dashboard = () => {
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementItem | null>(null)
+  const [showFacebookPage, setShowFacebookPage] = useState(false)
   const [showNewsScrollHint, setShowNewsScrollHint] = useState(true)
   const [showEventsScrollHint, setShowEventsScrollHint] = useState(true)
   const [showAnnouncementsScrollHint, setShowAnnouncementsScrollHint] = useState(true)
@@ -889,11 +890,11 @@ const Dashboard = () => {
           {/* Logo */}
 
           <div className=" flex  flex-row-reverse  gap-2">
-            <a href="https://www.facebook.com/DICTRegion10" target="_blank" className=" w-[70%] h-[80%] self-center bg-white rounded-full flex  p-5 animate-fade-in-down items-center justify-center">
+            <button onClick={() => setShowFacebookPage(true)} className=" w-[70%] h-[80%] self-center bg-white rounded-full flex  p-5 animate-fade-in-down items-center justify-center cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105">
               <div className="flex items-center justify-center">
                 <img src="./DICT-1024x522.webp" className="h-[100px] object-contain drop-shadow-lg" alt="DICT Logo" />
               </div>
-            </a>
+            </button>
 
             <div className="bg-white/95 backdrop-blur-sm w-full rounded-2xl shadow-xl border border-blue-100/50  animate-fade-in-down">
               <div className="grid grid-cols-1 gap-4">
@@ -1459,6 +1460,43 @@ const Dashboard = () => {
           </div>
         </div>
         
+      )}
+
+      {/* Floating Facebook Page Window */}
+      {showFacebookPage && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in" onClick={() => setShowFacebookPage(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[540px] max-h-[95vh] overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                
+                <div>
+                  <h2 className="text-xl font-bold text-white">DICT Region 10</h2>
+                  <p className="text-blue-100 text-sm">Facebook Page</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowFacebookPage(false)}
+                className="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+              >
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="overflow-y-auto custom-scrollbar bg-gray-50 p-4" style={{ maxHeight: 'calc(95vh - 100px)' }}>
+              <iframe
+                src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FDICTRegion10&tabs=timeline&width=865&height=700&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId"
+                className="w-full border-0 bg-white rounded-lg"
+                style={{ minHeight: '700px' }}
+                frameBorder="0"
+                scrolling="yes"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups-to-escape-sandbox"
+                allowFullScreen={true}
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              ></iframe>
+            </div>
+          </div>
+        </div>
       )}
 
       <style>{`
