@@ -31,13 +31,31 @@ interface WeatherData {
   location: string
 }
 
-// Sample YouTube videos with duration - defined outside component to prevent recreating on each render
-// Duration is in seconds
-const videos = [
-  { id: "_PdnRgVc19w", duration: 210 }, // 3:30 minutes
-  { id: "6tM6SfzhcrA", duration: 94 }, // 1:34 minutes
-  { id: "dofoQn3X-20", duration: 102 }  // 1:42 minutes
-]
+interface NewsItem {
+  date: string
+  title: string
+  category: string
+  postUrl: string
+}
+
+interface VideoItem {
+  id: string
+  duration: number
+}
+
+interface EventItem {
+  date: string
+  title: string
+  time: string
+  description: string
+}
+
+interface AnnouncementItem {
+  date: string
+  title: string
+  priority: string
+  description: string
+}
 
 const Dashboard = () => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
@@ -49,13 +67,22 @@ const Dashboard = () => {
   const [touchEnd, setTouchEnd] = useState(0)
   const [isAutoSwipe, setIsAutoSwipe] = useState(true)
   const [weather, setWeather] = useState<WeatherData | null>(null)
-  const [selectedNews, setSelectedNews] = useState<typeof news[0] | null>(null)
+  const [news, setNews] = useState<NewsItem[]>([])
+  const [videos, setVideos] = useState<VideoItem[]>([
+    { id: "_PdnRgVc19w", duration: 210 },
+    { id: "6tM6SfzhcrA", duration: 94 },
+    { id: "dofoQn3X-20", duration: 102 }
+  ])
+  const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementItem | null>(null)
   const [showNewsScrollHint, setShowNewsScrollHint] = useState(true)
   const [showEventsScrollHint, setShowEventsScrollHint] = useState(true)
   const [showAnnouncementsScrollHint, setShowAnnouncementsScrollHint] = useState(true)
   const [showKeyboard, setShowKeyboard] = useState(false)
   const autoSwipeTimer = useRef<NodeJS.Timeout | null>(null)
   const videoAutoNextTimer = useRef<NodeJS.Timeout | null>(null)
+  const videoIframeRef = useRef<HTMLIFrameElement>(null)
   const newsScrollRef = useRef<HTMLDivElement>(null)
   const eventsScrollRef = useRef<HTMLDivElement>(null)
   const announcementsScrollRef = useRef<HTMLDivElement>(null)
@@ -71,57 +98,58 @@ const Dashboard = () => {
     return () => clearInterval(logoInterval)
   }, [])
 
-  const events = [
-    { date: "Feb 1, 2026", title: "Team Meeting", time: "10:00 AM" },
-    { date: "Feb 3, 2026", title: "Project Review", time: "2:00 PM" },
-    { date: "Feb 5, 2026", title: "Client Presentation", time: "11:30 AM" },
-    { date: "Feb 8, 2026", title: "Workshop", time: "3:00 PM" },
-    { date: "Feb 10, 2026", title: "Department Sync", time: "9:00 AM" },
-  ]
-
-  const news = [
-    {
-      date: "Jan 30, 2026",
-      title: "DICT Launches New E-Government Portal",
-      category: "Technology",
-      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid03PeXr1qK2KCrxychWwBFmZxJCJDvFvbavGjKfSmDvmPCNACFJYoYhnBNLPtFaGuNl?rdid=KtQ7kgvJ6MBUYzT9#"
+  const events: EventItem[] = [
+    { 
+      date: "Feb 1, 2026", 
+      title: "Team Meeting", 
+      time: "10:00 AM",
+      description: "Monthly team meeting to discuss ongoing projects, updates, and upcoming initiatives. All team members are expected to attend and provide status updates on their assigned tasks."
     },
-    {
-      date: "Jan 28, 2026",
-      title: "DICT Partners with Local Governments for Digital Transformation",
-      category: "Partnership",
-      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02uHVjw5uDXdBS63gZa7nQRBKtWcDCSfKQV5Rh4QEhC43sPbSrPvwAMpJdCJa73a9wl?rdid=XFXCv1fck1IsC4mH#"
+    { 
+      date: "Feb 3, 2026", 
+      title: "Project Review", 
+      time: "2:00 PM",
+      description: "Comprehensive review of the current project status, milestones achieved, and next steps. Stakeholders will evaluate progress and discuss any challenges or roadblocks."
     },
-    {
-      date: "Jan 25, 2026",
-      title: "Cybersecurity Awareness Campaign",
-      category: "Security",
-      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02G45UmyHuSeTTEE3FE4u1EwVz7rwqmx3RsUSfFtTPAXoeK7m6YNXAK7tAkyidytBTl"
+    { 
+      date: "Feb 5, 2026", 
+      title: "Client Presentation", 
+      time: "11:30 AM",
+      description: "Formal presentation to clients showcasing project deliverables, progress reports, and future implementation plans. Q&A session will follow the presentation."
     },
-    {
-      date: "Jan 28, 2026",
-      title: "DICT Announces Free Training Programs",
-      category: "Education",
-      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid0259kWuHjiLx8DLxdw3fo7MgqRNqmnt1pwdKtQcnSRMt2qCk9YekXwKE8P6VaJ2cJEl"
+    { 
+      date: "Feb 8, 2026", 
+      title: "Workshop", 
+      time: "3:00 PM",
+      description: "Interactive training workshop focused on new technologies and best practices. Participants will gain hands-on experience and practical knowledge applicable to their daily work."
     },
-    {
-      date: "Jan 20, 2026",
-      title: "eGovPH Update",
-      category: "Technology",
-      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02Xw3fy4yLPGAfVja9t9v77xYrumbQVrcQvruZfSXyMxbDDLvBSwfyAw32B8854MkPl"
-    },
-    {
-      date: "Jan 22, 2026",
-      title: "Free WiFi Expansion Project",
-      category: "Infrastructure",
-      postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid02G45UmyHuSeTTEE3FE4u1EwVz7rwqmx3RsUSfFtTPAXoeK7m6YNXAK7tAkyidytBTl"
+    { 
+      date: "Feb 10, 2026", 
+      title: "Department Sync", 
+      time: "9:00 AM",
+      description: "Inter-department synchronization meeting to align goals, share updates, and coordinate cross-functional activities. Key decision-makers from all departments will attend."
     },
   ]
 
-  const announcements = [
-    { date: "Jan 30, 2026", title: "Office Closure for National Holiday", priority: "High" },
-    { date: "Jan 29, 2026", title: "System Maintenance Scheduled", priority: "Medium" },
-    { date: "Jan 27, 2026", title: "New Service Window Hours", priority: "Low" },
+  const announcements: AnnouncementItem[] = [
+    { 
+      date: "Jan 30, 2026", 
+      title: "Office Closure for National Holiday", 
+      priority: "High",
+      description: "The office will be closed in observance of the national holiday. All operations will resume on the next working day. Emergency contact information is available on the company portal."
+    },
+    { 
+      date: "Jan 29, 2026", 
+      title: "System Maintenance Scheduled", 
+      priority: "Medium",
+      description: "Scheduled system maintenance will be performed to upgrade infrastructure and improve performance. Some services may be temporarily unavailable during the maintenance window. Please save your work regularly."
+    },
+    { 
+      date: "Jan 27, 2026", 
+      title: "New Service Window Hours", 
+      priority: "Low",
+      description: "Service window hours have been updated to better accommodate client needs. The new schedule will be effective immediately. Please check the updated hours on the website or contact reception for details."
+    },
   ]
 
   const totalPanels = 3
@@ -263,6 +291,80 @@ const Dashboard = () => {
     return () => clearInterval(weatherInterval)
   }, [])
 
+  // Fetch news from Google Sheets
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const SHEET_ID = '1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY'
+        const SHEET_NAME = 'news'
+        const API_KEY = import.meta.env.VITE_GOOGLE_KEY
+        
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D?key=${API_KEY}`
+        
+        const response = await axios.get(url)
+        
+        if (response.data && response.data.values) {
+          const newsData: NewsItem[] = response.data.values.map((row: string[]) => ({
+            title: row[0] || '',
+            category: row[1] || '',
+            postUrl: row[2] || '',
+            date: row[3] || ''
+          }))
+          
+          setNews(newsData)
+        }
+      } catch (error) {
+        console.error('Google Sheets API error:', error)
+        // Fallback to default news if API fails
+        setNews([
+          {
+            date: "Jan 30, 2026",
+            title: "DICT Launches New E-Government Portal",
+            category: "Technology",
+            postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid03PeXr1qK2KCrxychWwBFmZxJCJDvFvbavGjKfSmDvmPCNACFJYoYhnBNLPtFaGuNl?rdid=KtQ7kgvJ6MBUYzT9#"
+          }
+        ])
+      }
+    }
+
+    fetchNews()
+    // Refresh news every 5 minutes
+    const newsInterval = setInterval(fetchNews, 300000)
+    return () => clearInterval(newsInterval)
+  }, [])
+
+  // Fetch videos from Google Sheets
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const SHEET_ID = '1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY'
+        const SHEET_NAME = 'videos'
+        const API_KEY = import.meta.env.VITE_GOOGLE_KEY
+        
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:B?key=${API_KEY}`
+        
+        const response = await axios.get(url)
+        
+        if (response.data && response.data.values && response.data.values.length > 0) {
+          const videosData: VideoItem[] = response.data.values.map((row: string[]) => ({
+            id: row[0] || '',
+            duration: parseInt(row[1]) || 0
+          }))
+          
+          setVideos(videosData)
+        }
+      } catch (error) {
+        console.error('Google Sheets Videos API error:', error)
+        // Keep fallback videos if API fails
+      }
+    }
+
+    fetchVideos()
+    // Refresh videos every 5 minutes
+    const videosInterval = setInterval(fetchVideos, 300000)
+    return () => clearInterval(videosInterval)
+  }, [])
+
   // Update time every second
   useEffect(() => {
     const timer = setInterval(() => {
@@ -270,6 +372,21 @@ const Dashboard = () => {
     }, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  // Auto-unmute video after 1 second
+  useEffect(() => {
+    const unmuteTimer = setTimeout(() => {
+      if (videoIframeRef.current && videoIframeRef.current.contentWindow) {
+        // Send unmute command to YouTube iframe
+        videoIframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+          '*'
+        )
+      }
+    }, 1000)
+
+    return () => clearTimeout(unmuteTimer)
+  }, [currentVideoIndex, videos])
 
   // Auto-next video functionality
   useEffect(() => {
@@ -280,10 +397,12 @@ const Dashboard = () => {
 
     // Set up timer to auto-advance to next video when current video ends
     // Add 3 seconds buffer to account for video loading time
-    const videoDuration = videos[currentVideoIndex].duration
-    videoAutoNextTimer.current = setTimeout(() => {
-      setCurrentVideoIndex((prev) => (prev + 1) % videos.length)
-    }, (videoDuration + 3) * 1000)
+    if (videos.length > 0 && videos[currentVideoIndex]) {
+      const videoDuration = videos[currentVideoIndex].duration
+      videoAutoNextTimer.current = setTimeout(() => {
+        setCurrentVideoIndex((prev) => (prev + 1) % videos.length)
+      }, (videoDuration + 3) * 1000)
+    }
 
     // Cleanup on unmount or when video changes
     return () => {
@@ -291,7 +410,7 @@ const Dashboard = () => {
         clearTimeout(videoAutoNextTimer.current)
       }
     }
-  }, [currentVideoIndex])
+  }, [currentVideoIndex, videos])
 
   // Auto-swipe functionality
   useEffect(() => {
@@ -311,6 +430,36 @@ const Dashboard = () => {
       }
     }
   }, [isAutoSwipe, totalPanels])
+
+  // Auto-refresh at specific times (7:39 AM and 11:59 AM)
+  useEffect(() => {
+    const checkTimeAndRefresh = () => {
+      const now = new Date()
+      const hours = now.getHours()
+      const minutes = now.getMinutes()
+      
+      // Check if current time matches 7:39 AM or 11:59 AM
+      if ((hours === 7 && minutes === 39) || (hours === 10 && minutes ===25)) {
+        const lastReloadKey = 'lastAutoReload'
+        const currentTimeKey = `${hours}:${minutes}`
+        const lastReload = localStorage.getItem(lastReloadKey)
+        
+        // Only reload if we haven't already reloaded for this time
+        if (lastReload !== currentTimeKey) {
+          localStorage.setItem(lastReloadKey, currentTimeKey)
+          window.location.reload()
+        }
+      }
+    }
+
+    // Check every minute
+    const refreshTimer = setInterval(checkTimeAndRefresh, 60000)
+
+    // Also check immediately on mount
+    checkTimeAndRefresh()
+
+    return () => clearInterval(refreshTimer)
+  }, [])
 
   const nextVideo = () => {
     setCurrentVideoIndex((prev) => (prev + 1) % videos.length)
@@ -875,11 +1024,13 @@ const Dashboard = () => {
                     {events.slice(0, 4).map((event, index) => (
                       <div
                         key={index}
-                        className="group bg-gradient-to-r from-blue-50 to-white p-4 rounded-lg border-l-4 border-blue-500 hover:border-blue-600 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
+                        onClick={() => setSelectedEvent(event)}
+                        className="group cursor-pointer bg-gradient-to-r from-blue-50 to-white p-4 rounded-lg border-l-4 border-blue-500 hover:border-blue-600 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
                       >
                         <h3 className="text-sm font-bold text-slate-800 group-hover:text-blue-700 mb-2">
                           {event.title}
                         </h3>
+                        <p className="text-xs text-slate-600 mb-2 line-clamp-2">{event.description}</p>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-1.5 text-xs text-slate-500">
                             <Calendar className="w-3 h-3" />
@@ -915,9 +1066,14 @@ const Dashboard = () => {
                       <div
                         key={index}
                         onClick={() => setSelectedNews(item)}
-                        className="group cursor-pointer bg-white rounded-lg border border-emerald-200 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 overflow-hidden relative"
+                        className="group cursor-pointer bg-red-500  rounded-lg border border-emerald-200 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 overflow-hidden relative flex "
                       >
+
+                        
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 opacity-1 group-hover:opacity-100 transition-opacity z-10 flex items-end justify-center pb-2">
+                        <div className=" absolute z-10  self-center text-white">
+                          {item?.title}
+                        </div>
                           <span className="text-white text-xs font-semibold flex items-center gap-1">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -927,8 +1083,8 @@ const Dashboard = () => {
                           </span>
                         </div>
                         <iframe
-                          src={`https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(item.postUrl)}&show_text=true&width=350`}
-                          className="w-full h-[180px] border-0 pointer-events-none"
+                          src={`https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(item.postUrl)}&show_text=true`}
+                          className="w-full h-[140px] border-0 pointer-events-none "
                           scrolling="no"
                           frameBorder="0"
                           allowFullScreen={true}
@@ -959,11 +1115,13 @@ const Dashboard = () => {
                     {announcements.map((item, index) => (
                       <div
                         key={index}
-                        className="group bg-gradient-to-r from-orange-50 to-white p-4 rounded-lg border-l-4 border-orange-500 hover:border-orange-600 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
+                        onClick={() => setSelectedAnnouncement(item)}
+                        className="group cursor-pointer bg-gradient-to-r from-orange-50 to-white p-4 rounded-lg border-l-4 border-orange-500 hover:border-orange-600 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
                       >
                         <h3 className="text-sm font-bold text-slate-800 group-hover:text-orange-700 mb-2">
                           {item.title}
                         </h3>
+                        <p className="text-xs text-slate-600 mb-2 line-clamp-2">{item.description}</p>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-1.5 text-xs text-slate-500">
                             <Calendar className="w-3 h-3" />
@@ -1039,15 +1197,19 @@ const Dashboard = () => {
             </div>
             {/* Larger Video Container */}
             <div className="flex-1 min-h-0 relative rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 shadow-2xl ring-1 ring-black/5">
-              <iframe
-                key={currentVideoIndex}
-                className="w-full h-full"
-                src={`https://www.youtube.com/embed/${videos[currentVideoIndex].id}?autoplay=1&mute=0&rel=0&enablejsapi=1&controls=1&modestbranding=1`}
-                title="YouTube video player"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
+              {videos.length > 0 && videos[currentVideoIndex] && (
+                <iframe
+                  ref={videoIframeRef}
+                  key={`${currentVideoIndex}-${videos[currentVideoIndex].id}`}
+                  className="w-full h-full"
+                  src={`https://www.youtube.com/embed/${videos[currentVideoIndex].id}?autoplay=1&mute=1&rel=0&enablejsapi=1&controls=1&modestbranding=1`}
+                  title="YouTube video player"
+                  
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              )}
             </div>
             {/* Enhanced Video Indicators */}
             <div className="flex items-center justify-center gap-2 mt-2">
@@ -1175,11 +1337,93 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Floating Event Window */}
+      {selectedEvent && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in" onClick={() => setSelectedEvent(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">{selectedEvent.title}</h3>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-blue-100 text-sm">{selectedEvent.date}</span>
+                    <span className="text-blue-100 text-sm">•</span>
+                    <span className="text-blue-100 text-sm">{selectedEvent.time}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedEvent(null)}
+                className="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+              >
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto custom-scrollbar" style={{ maxHeight: 'calc(90vh - 120px)' }}>
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border-l-4 border-blue-500">
+                <h4 className="text-lg font-bold text-slate-800 mb-3">Event Details</h4>
+                <p className="text-slate-700 leading-relaxed">{selectedEvent.description}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Announcement Window */}
+      {selectedAnnouncement && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in" onClick={() => setSelectedAnnouncement(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Megaphone className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">{selectedAnnouncement.title}</h3>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-orange-100 text-sm">{selectedAnnouncement.date}</span>
+                    <span className="text-orange-100 text-sm">•</span>
+                    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                      selectedAnnouncement.priority === 'High' 
+                        ? 'bg-red-500 text-white' 
+                        : selectedAnnouncement.priority === 'Medium' 
+                        ? 'bg-yellow-500 text-white' 
+                        : 'bg-green-500 text-white'
+                    }`}>
+                      {selectedAnnouncement.priority} Priority
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedAnnouncement(null)}
+                className="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+              >
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto custom-scrollbar" style={{ maxHeight: 'calc(90vh - 120px)' }}>
+              <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-6 border-l-4 border-orange-500">
+                <h4 className="text-lg font-bold text-slate-800 mb-3">Announcement Details</h4>
+                <p className="text-slate-700 leading-relaxed">{selectedAnnouncement.description}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Floating News Window */}
       {selectedNews && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in" onClick={() => setSelectedNews(null)}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[95vh] overflow-hidden animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-4 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-white">{selectedNews.title}</h2>
                 <div className="flex items-center gap-3 mt-1">
@@ -1201,11 +1445,11 @@ const Dashboard = () => {
                 </svg>
               </button>
             </div>
-            <div className="overflow-y-auto custom-scrollbar bg-gray-50 p-4" style={{ maxHeight: 'calc(95vh - 100px)' }}>
+            <div className="overflow-y-auto custom-scrollbar  p-4" style={{ maxHeight: 'calc(95vh - 100px)' }}>
               <iframe
-                src={`https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(selectedNews.postUrl)}&show_text=true&width=600`}
+                src={`https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(selectedNews.postUrl)}&show_text=true&width=734`}
                 className="w-full border-0 bg-white rounded-lg"
-                style={{ minHeight: '800px' }}
+                style={{ minHeight: '700px' }}
                 frameBorder="0"
                 sandbox="allow-scripts allow-same-origin allow-forms"
                 allowFullScreen={true}
