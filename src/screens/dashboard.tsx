@@ -81,6 +81,7 @@ const Dashboard = () => {
   const [showEventsScrollHint, setShowEventsScrollHint] = useState(true)
   const [showAnnouncementsScrollHint, setShowAnnouncementsScrollHint] = useState(true)
   const [showKeyboard, setShowKeyboard] = useState(false)
+  const [videoCountdown, setVideoCountdown] = useState(0)
   const autoSwipeTimer = useRef<NodeJS.Timeout | null>(null)
   const videoAutoNextTimer = useRef<NodeJS.Timeout | null>(null)
   const videoIframeRef = useRef<HTMLIFrameElement>(null)
@@ -400,6 +401,10 @@ const Dashboard = () => {
     // Add 3 seconds buffer to account for video loading time
     if (videos.length > 0 && videos[currentVideoIndex]) {
       const videoDuration = videos[currentVideoIndex].duration
+      
+      // Initialize countdown
+      setVideoCountdown(videoDuration + 3)
+      
       videoAutoNextTimer.current = setTimeout(() => {
         setCurrentVideoIndex((prev) => (prev + 1) % videos.length)
       }, (videoDuration + 3) * 1000)
@@ -412,6 +417,17 @@ const Dashboard = () => {
       }
     }
   }, [currentVideoIndex, videos])
+
+  // Countdown timer for video auto-next
+  useEffect(() => {
+    if (videoCountdown > 0) {
+      const countdownTimer = setTimeout(() => {
+        setVideoCountdown((prev) => prev - 1)
+      }, 1000)
+      
+      return () => clearTimeout(countdownTimer)
+    }
+  }, [videoCountdown])
 
   // Auto-swipe functionality
   useEffect(() => {
@@ -1177,8 +1193,13 @@ const Dashboard = () => {
                     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                   </svg>
                 </div>
-                <div>
+                <div className="flex items-center gap-2">
                   <h3 className="text-base font-bold text-slate-800">Featured Videos</h3>
+                  {videoCountdown > 0 && (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold">
+                      {Math.floor(videoCountdown / 60)}:{String(videoCountdown % 60).padStart(2, '0')}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className=" flex gap-3">
