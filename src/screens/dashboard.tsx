@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { ChevronLeft, ChevronRight, Calendar, Search, ArrowRight, ArrowLeft, FileText,  Newspaper, Megaphone, Lock, Unlock, MapPin, Droplets, } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar, Search, ArrowRight, ArrowLeft, FileText,  Newspaper, Megaphone, Lock, Unlock, MapPin, Droplets, ArrowDownIcon, } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
@@ -14,8 +14,6 @@ import CyberSec from "../assets/cyber-sec.png"
 import NBP from "../assets/nbp.png"
 import PNPKI from "../assets/PNPKI.jpg"
 import NIPPSB from "../assets/NIPPSB.png"
-import { time } from "console"
-
 interface CitizenService {
   id: string
   title: string
@@ -83,6 +81,7 @@ const Dashboard = () => {
   const [showNewsScrollHint, setShowNewsScrollHint] = useState(true)
   const [showEventsScrollHint, setShowEventsScrollHint] = useState(true)
   const [showAnnouncementsScrollHint, setShowAnnouncementsScrollHint] = useState(true)
+  const [showServicesScrollHint, setShowServicesScrollHint] = useState(true)
   const [showKeyboard, setShowKeyboard] = useState(false)
   const [videoCountdown, setVideoCountdown] = useState(0)
   const autoSwipeTimer = useRef<NodeJS.Timeout | null>(null)
@@ -91,6 +90,7 @@ const Dashboard = () => {
   const newsScrollRef = useRef<HTMLDivElement>(null)
   const eventsScrollRef = useRef<HTMLDivElement>(null)
   const announcementsScrollRef = useRef<HTMLDivElement>(null)
+  const servicesScrollRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   // For logo wiggle animation
@@ -633,6 +633,18 @@ const Dashboard = () => {
     }
   }
 
+  const handleServicesScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const element = e.currentTarget
+    const isScrollable = element.scrollHeight > element.clientHeight
+    const isAtBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 10
+    
+    if (!isScrollable || isAtBottom) {
+      setShowServicesScrollHint(false)
+    } else if (element.scrollTop === 0) {
+      setShowServicesScrollHint(true)
+    }
+  }
+
   // Auto-scroll animation to hint users they can scroll - News
   useEffect(() => {
     if (showNewsScrollHint && currentPanel === 1 && newsScrollRef.current) {
@@ -708,6 +720,30 @@ const Dashboard = () => {
     }
   }, [showAnnouncementsScrollHint, currentPanel])
 
+  // Auto-scroll animation to hint users they can scroll - Services
+  useEffect(() => {
+    if (showServicesScrollHint && !selectedService && searchQuery === '' && servicesScrollRef.current) {
+      const scrollElement = servicesScrollRef.current
+      let scrollInterval: NodeJS.Timeout
+
+      const startDelay = setTimeout(() => {
+        scrollInterval = setInterval(() => {
+          if (scrollElement.scrollTop === 0) {
+            scrollElement.scrollTo({ top: 20, behavior: 'smooth' })
+            setTimeout(() => {
+              scrollElement.scrollTo({ top: 0, behavior: 'smooth' })
+            }, 800)
+          }
+        }, 2500)
+      }, 1500)
+
+      return () => {
+        clearTimeout(startDelay)
+        if (scrollInterval) clearInterval(scrollInterval)
+      }
+    }
+  }, [showServicesScrollHint, selectedService, searchQuery])
+
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -752,20 +788,28 @@ const Dashboard = () => {
       </div>
       <div className="h-[calc(100%-120px)] w-full flex gap-5 p-5 pt-0">
         {/* Left Side - Citizen Charter */}
-        <div className="flex-1 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-blue-100/50 overflow-hidden">
+        <div className="flex-1 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-blue-100/50 overflow-hidden relative">
+          
+          {showServicesScrollHint && !selectedService && searchQuery === '' && (
+            <div className="absolute z-30  flex flex-col justify-center items-center self-center w-full bottom-0 pointer-events-none pb-6 h-36 bg-gradient-to-t animate-fade-in from-white via-white/90 to-transparent">
+              <p className="text-blue-500 text-xs font-semibold mb-1 drop-shadow-sm">Swipe Down</p>
+              <ArrowDownIcon className="w-7 h-7 text-blue-500  animate-bounce-slow drop-shadow-sm" />
+            </div>
+          )}
+          
           <div className="h-full flex flex-col">
             {/* Header with Gradient Background */}
             <div className="bg-gradient-to-br from-sky-400 to-blue-600 p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-white" />
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <FileText className="w-10 h-10 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white tracking-tight">
+                  <h1 className="text-4xl font-bold text-white tracking-tight">
                     {selectedService ? selectedService.title : 'Citizen Charter'}
                   </h1>
                   {!selectedService && (
-                    <p className="text-blue-100 text-sm">Browse available government services</p>
+                    <p className="text-blue-100 text-base">Browse available government services</p>
                   )}
                 </div>
               </div>
@@ -788,10 +832,14 @@ const Dashboard = () => {
             </div>
 
             {!selectedService ? (
-              <div className="flex-1 p-6 space-y-6 overflow-y-auto custom-scrollbar">
+              <div 
+                ref={servicesScrollRef}
+                onScroll={handleServicesScroll}
+                className="flex-1 p-6 space-y-6 overflow-y-auto custom-scrollbar"
+              >
                 {/* External Services List */}
                 <div className="mb-4">
-                  <h2 className="text-xl font-bold flex items-center gap-2 mb-2 text-blue-800">
+                  <h2 className="text-2xl font-bold flex items-center gap-2 mb-2 text-blue-800">
                     <span role="img" aria-label="pin">📌</span>
                     LIST OF ALL EXTERNAL SERVICES
                   </h2>
@@ -809,10 +857,10 @@ const Dashboard = () => {
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         <div className="text-left relative z-10">
-                          <h3 className="text-lg font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
+                          <h3 className="text-2xl font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
                             {item.title}
                           </h3>
-                          <p className="text-xs text-slate-500 mt-1 line-clamp-2">{item.description}</p>
+                          <p className="text-base text-slate-500 mt-1 line-clamp-2">{item.description}</p>
                         </div>
                         <div className="relative z-10 flex items-center gap-2">
                           <div className="w-10 h-10 rounded-full bg-blue-500 group-hover:bg-blue-600 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
@@ -833,13 +881,13 @@ const Dashboard = () => {
                 </div>
                 {/* Feedback and Complaints Mechanism */}
                 <div className="mt-8 bg-gradient-to-br from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-xl shadow p-6">
-                  <h2 className="text-xl font-bold text-yellow-800 mb-2 flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-yellow-800 mb-2 flex items-center gap-2">
                     <span role="img" aria-label="pin">📌</span>
                     FEEDBACK AND COMPLAINTS MECHANISM
                   </h2>
                   <div className="flex items-center gap-2 mb-2">
                     <Megaphone className="w-5 h-5 text-yellow-600" />
-                    <span className="text-yellow-700 font-semibold">Feedback and Complaints Mechanism</span>
+                    <span className="text-yellow-700 text-lg font-semibold">Feedback and Complaints Mechanism</span>
                   </div>
                   <div className="text-slate-700 text-sm space-y-3">
                     <div>
@@ -892,7 +940,7 @@ const Dashboard = () => {
                         <li>CART determines jurisdiction and authority.</li>
                         <li>CART conducts investigation and forwards the complaint to the concerned office for explanation.</li>
                         <li>The concerned office must respond within 3 days.</li>
-                        <li>CART submits a CART Referral Report and returns the docket to ARTA within 20 working days (extendible once with complainant’s consent).</li>
+                        <li>CART submits a CART Referral Report and returns the docket to ARTA within 20 working days (extendiblescrolshowServicesScrollHint e once with complainant’s consent).</li>
                         <li>If resolved: Complainant files a Consent to Closure Complaint (ARTA MC No. 2021-11).</li>
                         <li>If unresolved: CART submits:
                           <ul className="list-[circle] ml-6 mt-1">
@@ -913,52 +961,55 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </div>
+
+
+                
               </div>
             ) : (
               <div className="flex-1 flex flex-col p-6 overflow-hidden animate-fade-in">
                 <Button
                   onClick={handleBackToList}
                   variant="ghost"
-                  className="w-fit mb-6 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg group"
+                  className="w-fit mb-6 text-xl text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg group"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                  <ArrowLeft className="w-6 h-6 mr-2 group-hover:-translate-x-1 transition-transform" />
                   Back to Services
                 </Button>
                 <div className="flex-1 overflow-y-auto custom-scrollbar space-y-5">
                   <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white p-6 rounded-xl shadow-lg">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                        <FileText className="w-6 h-6" />
+                        <FileText className="w-8 h-8" />
                       </div>
                       <div>
-                        <p className="text-blue-100 text-xs font-medium mb-1">DICT External Service</p>
-                        <p className="text-xl font-bold">{selectedService.title}</p>
+                        <p className="text-blue-100 text-base font-medium mb-1">DICT External Service</p>
+                        <p className="text-2xl font-bold">{selectedService.title}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border-l-4 border-blue-500 shadow-sm space-y-4">
-                    <h3 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
-                      <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                        <FileText className="w-4 h-4 text-white" />
+                  <div className="bg-gradient-to-br  from-blue-50 to-indigo-50 p-6 rounded-xl border-l-4 border-blue-500 shadow-sm space-y-4">
+                    <h3 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
+                      <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-white" />
                       </div>
                       Description
                     </h3>
-                    <p className="text-slate-700 leading-relaxed mb-2">{selectedService.description}</p>
+                    <p className="text-slate-700 text-lg leading-relaxed mb-2">{selectedService.description}</p>
                     <div>
-                      <h4 className="font-semibold text-blue-700 mb-1">Procedure:</h4>
+                      <h4 className="font-semibold text-xl text-blue-700 mb-1">Procedure:</h4>
                       <ol className="list-decimal ml-6 text-slate-700 space-y-1">
                         {selectedService.procedure.map((step, idx) => (
-                          <li key={idx}>{step}</li>
+                          <li className=" text-lg" key={idx}>{step}</li>
                         ))}
                       </ol>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-blue-700 mb-1">Processing Time:</h4>
-                      <p className="ml-6 text-slate-700">{selectedService.processingTime}</p>
+                      <h4 className="font-semibold text-xl text-blue-700 mb-1">Processing Time:</h4>
+                      <p className="ml-6 text-lg text-slate-700">{selectedService.processingTime}</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-blue-700 mb-1">Person Responsible:</h4>
-                      <ul className="list-disc ml-6 text-slate-700 space-y-1">
+                      <h4 className="font-semibold text-blue-700 text-xl  mb-1">Person Responsible:</h4>
+                      <ul className="list-disc text-lg ml-6 text-slate-700 space-y-1">
                         {selectedService.personResponsible.map((person, idx) => (
                           <li key={idx}>{person}</li>
                         ))}
