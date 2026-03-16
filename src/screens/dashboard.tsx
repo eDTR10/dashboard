@@ -71,7 +71,7 @@ interface VideoItem { id: string; duration: number }
 interface EventItem { date: string; title: string; time: string; description: string }
 interface AnnouncementItem { date: string; title: string; priority: string; description: string }
 interface OfficerData { name: string; province: string; email: string; address: string; photo: string | null; map: string }
-interface MapModal { name: string; address: string; mapUrl: string }
+interface MapModal { name: string; address: string; mapUrl: string; embedUrl: string }
 
 const mapJsonServices = (services: JsonService[]): CitizenService[] =>
   services.map((s) => ({
@@ -155,7 +155,7 @@ const Dashboard = () => {
       email: "r1O.misamisoriental@dict.gov.ph",
       address: "Toribio Chavez St., Cagayan de Oro City, Misamis Oriental",
       photo: MisamisOriental,
-      map: "https://www.google.com/maps/place/DICT+Misamis+Oriental+Office/@8.4771531,124.6406304,1307m/data=!3m2!1e3!4b1!4m6!3m5!1s0x32fff3da4cc491cb:0xae08404d85106f29!8m2!3d8.4771531!4d124.6432107!16s%2Fg%2F11q1t82k8c?entry=ttu&g_ep=EgoyMDI2MDMxMS4wIKXMDSoASAFQAw%3D%3D"
+      map: "https://www.google.com/maps/place/DICT+Misamis+Oriental+Office/@8.4771173,124.6431471,82m/data=!3m1!1e3!4m14!1m7!3m6!1s0x32fff3da4cc491cb:0xae08404d85106f29!2sDICT+Misamis+Oriental+Office!8m2!3d8.4771531!4d124.6432107!16s%2Fg%2F11q1t82k8c!3m5!1s0x32fff3da4cc491cb:0xae08404d85106f29!8m2!3d8.4771531!4d124.6432107!16s%2Fg%2F11q1t82k8c?entry=ttu&g_ep=EgoyMDI2MDMxMS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       name: "Engr. Kenneth T. Asuncion",
@@ -198,37 +198,68 @@ const Dashboard = () => {
   }, [])
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchEvents = async () => {
       try {
-        const r = await axios.get(`https://sheets.googleapis.com/v4/spreadsheets/1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY/values/events!A2:D?key=${import.meta.env.VITE_GOOGLE_KEY}`)
-        if (r.data?.values?.length > 0) setEvents(r.data.values.map((row: string[]) => ({ date: row[2] || "", title: row[0] || "", time: row[3] || "", description: row[1] || "" })))
+        const SHEET_ID = "1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY"
+        const SHEET_NAME = "events"
+        const API_KEY = import.meta.env.VITE_GOOGLE_KEY
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D?key=${API_KEY}`
+        const response = await axios.get(url)
+        if (response.data?.values?.length > 0) {
+          setEvents(
+            response.data.values.map((row: string[]) => ({
+              date: row[2] || "",
+              title: row[0] || "",
+              time: row[3] || "",
+              description: row[1] || "",
+            }))
+          )
+        }
       } catch {
         setEvents([
-          { date: "Feb 1, 2026", title: "Team Meeting", time: "10:00 AM", description: "Monthly team meeting to discuss ongoing projects, updates, and upcoming initiatives." },
-          { date: "Feb 3, 2026", title: "Project Review", time: "2:00 PM", description: "Comprehensive review of the current project status, milestones achieved, and next steps." },
-          { date: "Feb 5, 2026", title: "Client Presentation", time: "11:30 AM", description: "Formal presentation to clients showcasing project deliverables and future plans." },
-          { date: "Feb 8, 2026", title: "Workshop", time: "3:00 PM", description: "Interactive training workshop focused on new technologies and best practices." },
-          { date: "Feb 10, 2026", title: "Department Sync", time: "9:00 AM", description: "Inter-department synchronization meeting to align goals and share updates." },
+          { date: "Feb 1, 2026", title: "Team Meeting", time: "10:00 AM", description: "Monthly team meeting to discuss ongoing projects, updates, and upcoming initiatives. All team members are expected to attend and provide status updates on their assigned tasks." },
+          { date: "Feb 3, 2026", title: "Project Review", time: "2:00 PM", description: "Comprehensive review of the current project status, milestones achieved, and next steps. Stakeholders will evaluate progress and discuss any challenges or roadblocks." },
+          { date: "Feb 5, 2026", title: "Client Presentation", time: "11:30 AM", description: "Formal presentation to clients showcasing project deliverables, progress reports, and future implementation plans. Q&A session will follow the presentation." },
+          { date: "Feb 8, 2026", title: "Workshop", time: "3:00 PM", description: "Interactive training workshop focused on new technologies and best practices. Participants will gain hands-on experience and practical knowledge applicable to their daily work." },
+          { date: "Feb 10, 2026", title: "Department Sync", time: "9:00 AM", description: "Inter-department synchronization meeting to align goals, share updates, and coordinate cross-functional activities. Key decision-makers from all departments will attend." },
         ])
       }
     }
-    fetch(); const i = setInterval(fetch, 300000); return () => clearInterval(i)
+    fetchEvents()
+    const eventsInterval = setInterval(fetchEvents, 300000)
+    return () => clearInterval(eventsInterval)
   }, [])
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchAnnouncements = async () => {
       try {
-        const r = await axios.get(`https://sheets.googleapis.com/v4/spreadsheets/1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY/values/announcements!A2:D?key=${import.meta.env.VITE_GOOGLE_KEY}`)
-        if (r.data?.values?.length > 0) setAnnouncements(r.data.values.map((row: string[]) => ({ date: row[3] || "", time: row[4] || "", title: row[0] || "", priority: row[2] || "", description: row[1] || "" })))
+        const SHEET_ID = "1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY"
+        const SHEET_NAME = "announcements"
+        const API_KEY = import.meta.env.VITE_GOOGLE_KEY
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D?key=${API_KEY}`
+        const response = await axios.get(url)
+        if (response.data?.values?.length > 0) {
+          setAnnouncements(
+            response.data.values.map((row: string[]) => ({
+              date: row[3] || "",
+              time: row[4] || "",
+              title: row[0] || "",
+              priority: row[2] || "",
+              description: row[1] || "",
+            }))
+          )
+        }
       } catch {
         setAnnouncements([
-          { date: "Jan 30, 2026", title: "Office Closure for National Holiday", priority: "High", description: "The office will be closed in observance of the national holiday." },
-          { date: "Jan 29, 2026", title: "System Maintenance Scheduled", priority: "Medium", description: "Scheduled system maintenance will be performed to upgrade infrastructure." },
-          { date: "Jan 27, 2026", title: "New Service Window Hours", priority: "Low", description: "Service window hours have been updated to better accommodate client needs." },
+          { date: "Jan 30, 2026", title: "Office Closure for National Holiday", priority: "High", description: "The office will be closed in observance of the national holiday. All operations will resume on the next working day. Emergency contact information is available on the company portal." },
+          { date: "Jan 29, 2026", title: "System Maintenance Scheduled", priority: "Medium", description: "Scheduled system maintenance will be performed to upgrade infrastructure and improve performance. Some services may be temporarily unavailable during the maintenance window. Please save your work regularly." },
+          { date: "Jan 27, 2026", title: "New Service Window Hours", priority: "Low", description: "Service window hours have been updated to better accommodate client needs. The new schedule will be effective immediately. Please check the updated hours on the website or contact reception for details." },
         ])
       }
     }
-    fetch(); const i = setInterval(fetch, 300000); return () => clearInterval(i)
+    fetchAnnouncements()
+    const announcementsInterval = setInterval(fetchAnnouncements, 300000)
+    return () => clearInterval(announcementsInterval)
   }, [])
 
   const totalPanels = 3
@@ -238,33 +269,100 @@ const Dashboard = () => {
   )
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchWeather = async () => {
       try {
-        const r = await axios.request({ method: "GET", url: "https://weather-api167.p.rapidapi.com/api/weather/current", params: { lon: import.meta.env.VITE_WEATHER_LON || "124.629684", lat: import.meta.env.VITE_WEATHER_LAT || "8.4866927", zip: import.meta.env.VITE_WEATHER_ZIP || "9000" }, headers: { "x-rapidapi-key": import.meta.env.VITE_RAPIDAPI_KEY, "x-rapidapi-host": import.meta.env.VITE_RAPIDAPI_HOST || "weather-api167.p.rapidapi.com", Accept: "application/json" } })
-        if (r.data) setWeather({ temperature: r.data.main?.temprature ? Math.round(r.data.main.temprature - 273.15) : 24, humidity: r.data.main?.humidity || 65, description: r.data.weather?.[0]?.description || "Partly Cloudy", location: r.data.name || "Unknown" })
-      } catch { setWeather({ temperature: 24, humidity: 65, description: "Partly Cloudy", location: "Cagayan de Oro" }) }
+        const options = {
+          method: "GET",
+          url: "https://weather-api167.p.rapidapi.com/api/weather/current",
+          params: {
+            lon: import.meta.env.VITE_WEATHER_LON || "124.629684",
+            lat: import.meta.env.VITE_WEATHER_LAT || "8.4866927",
+            zip: import.meta.env.VITE_WEATHER_ZIP || "9000",
+          },
+          headers: {
+            "x-rapidapi-key": import.meta.env.VITE_RAPIDAPI_KEY,
+            "x-rapidapi-host": import.meta.env.VITE_RAPIDAPI_HOST || "weather-api167.p.rapidapi.com",
+            Accept: "application/json",
+          },
+        }
+        const response = await axios.request(options)
+        if (response.data) {
+          const tempInCelsius = response.data.main?.temprature
+            ? Math.round(response.data.main.temprature - 273.15)
+            : 24
+          setWeather({
+            temperature: tempInCelsius,
+            humidity: response.data.main?.humidity || 65,
+            description: response.data.weather?.[0]?.description || "Partly Cloudy",
+            location: response.data.name || "Unknown",
+          })
+        }
+      } catch {
+        setWeather({ temperature: 24, humidity: 65, description: "Partly Cloudy", location: "Cagayan de Oro" })
+      }
     }
-    fetch(); const i = setInterval(fetch, 600000); return () => clearInterval(i)
+    fetchWeather()
+    const weatherInterval = setInterval(fetchWeather, 600000)
+    return () => clearInterval(weatherInterval)
   }, [])
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchNews = async () => {
       try {
-        const r = await axios.get(`https://sheets.googleapis.com/v4/spreadsheets/1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY/values/news!A2:D?key=${import.meta.env.VITE_GOOGLE_KEY}`)
-        if (r.data?.values) setNews(r.data.values.map((row: string[]) => ({ title: row[0] || "", category: row[1] || "", postUrl: row[2] || "", date: row[3] || "" })))
-      } catch { setNews([{ date: "Jan 30, 2026", title: "DICT Launches New E-Government Portal", category: "Technology", postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid03PeXr1qK2KCrxychWwBFmZxJCJDvFvbavGjKfSmDvmPCNACFJYoYhnBNLPtFaGuNl?rdid=KtQ7kgvJ6MBUYzT9#" }]) }
+        const SHEET_ID = "1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY"
+        const SHEET_NAME = "news"
+        const API_KEY = import.meta.env.VITE_GOOGLE_KEY
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D?key=${API_KEY}`
+        const response = await axios.get(url)
+        if (response.data?.values) {
+          setNews(
+            response.data.values.map((row: string[]) => ({
+              title: row[0] || "",
+              category: row[1] || "",
+              postUrl: row[2] || "",
+              date: row[3] || "",
+            }))
+          )
+        }
+      } catch {
+        setNews([
+          {
+            date: "Jan 30, 2026",
+            title: "DICT Launches New E-Government Portal",
+            category: "Technology",
+            postUrl: "https://www.facebook.com/DICTRegion10/posts/pfbid03PeXr1qK2KCrxychWwBFmZxJCJDvFvbavGjKfSmDvmPCNACFJYoYhnBNLPtFaGuNl?rdid=KtQ7kgvJ6MBUYzT9#",
+          },
+        ])
+      }
     }
-    fetch(); const i = setInterval(fetch, 300000); return () => clearInterval(i)
+    fetchNews()
+    const newsInterval = setInterval(fetchNews, 300000)
+    return () => clearInterval(newsInterval)
   }, [])
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchVideos = async () => {
       try {
-        const r = await axios.get(`https://sheets.googleapis.com/v4/spreadsheets/1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY/values/videos!A2:B?key=${import.meta.env.VITE_GOOGLE_KEY}`)
-        if (r.data?.values?.length > 0) setVideos(r.data.values.map((row: string[]) => ({ id: row[0] || "", duration: parseInt(row[1]) || 0 })))
-      } catch { }
+        const SHEET_ID = "1cZNThXFsQjmRc3CAZoInjW29J-tULoOuATgaDi3eQMY"
+        const SHEET_NAME = "videos"
+        const API_KEY = import.meta.env.VITE_GOOGLE_KEY
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:B?key=${API_KEY}`
+        const response = await axios.get(url)
+        if (response.data?.values?.length > 0) {
+          setVideos(
+            response.data.values.map((row: string[]) => ({
+              id: row[0] || "",
+              duration: parseInt(row[1]) || 0,
+            }))
+          )
+        }
+      } catch {
+        // Keep fallback videos
+      }
     }
-    fetch(); const i = setInterval(fetch, 300000); return () => clearInterval(i)
+    fetchVideos()
+    const videosInterval = setInterval(fetchVideos, 300000)
+    return () => clearInterval(videosInterval)
   }, [])
 
   useEffect(() => { const t = setInterval(() => setCurrentTime(new Date()), 1000); return () => clearInterval(t) }, [])
@@ -350,6 +448,23 @@ const Dashboard = () => {
     return <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(text) }} />
   }
 
+  // ── Convert any Google Maps URL → embeddable maps/embed URL ──────────────
+  // Extracts lat/lng from the URL path and builds an embed URL.
+  // Falls back to a place search embed if coordinates can't be parsed.
+  const buildEmbedUrl = (mapUrl: string, placeName: string): string => {
+    const API_KEY = import.meta.env.VITE_GOOGLE_KEY || ""
+    // Try to extract coordinates from the URL (e.g. @8.4866874,124.6322643)
+    const coordMatch = mapUrl.match(/@(-?[\d.]+),(-?[\d.]+)/)
+    if (coordMatch) {
+      const lat = coordMatch[1]
+      const lng = coordMatch[2]
+      return `https://www.google.com/maps/embed/v1/view?key=${API_KEY}&center=${lat},${lng}&zoom=17&maptype=roadmap`
+    }
+    // Fallback: search by place name
+    const query = encodeURIComponent(placeName)
+    return `https://www.google.com/maps/embed/v1/place?key=${API_KEY}&q=${query}`
+  }
+
   const renderRequirementsTable = (rows: RequirementItem[]) => (
     <div className="w-full text-sm rounded-lg overflow-hidden border border-blue-200">
       <div className="grid grid-cols-[3fr_1fr]">
@@ -421,7 +536,7 @@ const Dashboard = () => {
 
             {/* Address — clickable → opens map modal */}
             <button
-              onClick={() => setMapModal({ name: po.name, address: po.address, mapUrl: po.map })}
+              onClick={() => setMapModal({ name: po.name, address: po.address, mapUrl: po.map, embedUrl: buildEmbedUrl(po.map, po.name + ' ' + po.address) })}
               className="flex items-start gap-2 w-full text-left group/addr"
               title="Click to view location on map"
             >
@@ -449,9 +564,16 @@ const Dashboard = () => {
       {/* Logo bar */}
       <div className="w-full bg-white/80 py-3 px-2 flex items-center justify-center shadow-md mb-4 animate-fade-in-down">
         <div className="flex items-center justify-center gap-16 w-full max-w-6xl mx-auto">
-          {[eGov, eLGU, Lakip, FreeWiFi, IIDB, ILCDB, CyberSec, NBP, PNPKI, NIPPSB].map((src, i) => (
-            <img key={i} src={src} alt="" className={`${[3, 6, 8, 9].includes(i) ? "h-20" : "h-10"} object-contain transition-transform duration-300 ${activeLogo === i ? "animate-wiggle" : ""}`} />
-          ))}
+          <img src={eGov} alt="eGov PH" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 0 ? "animate-wiggle" : ""}`} />
+          <img src={eLGU} alt="eLGU" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 1 ? "animate-wiggle" : ""}`} />
+          <img src={Lakip} alt="Lakip" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 2 ? "animate-wiggle" : ""}`} />
+          <img src={FreeWiFi} alt="Free WiFi For All" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 3 ? "animate-wiggle" : ""}`} />
+          <img src={IIDB} alt="IIDB" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 4 ? "animate-wiggle" : ""}`} />
+          <img src={ILCDB} alt="ILCDB" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 5 ? "animate-wiggle" : ""}`} />
+          <img src={CyberSec} alt="Cybersecurity" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 6 ? "animate-wiggle" : ""}`} />
+          <img src={NBP} alt="National Broadband Plan" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 7 ? "animate-wiggle" : ""}`} />
+          <img src={PNPKI} alt="Philippine National PKI" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 8 ? "animate-wiggle" : ""}`} />
+          <img src={NIPPSB} alt="ICT Planning, Policy and Standards" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 9 ? "animate-wiggle" : ""}`} />
         </div>
       </div>
 
@@ -841,7 +963,7 @@ const Dashboard = () => {
             {/* Map iframe */}
             <div style={{ height: "480px" }}>
               <iframe
-                src={mapModal.mapUrl}
+                src={mapModal.embedUrl}
                 className="w-full h-full border-0"
                 allowFullScreen
                 loading="lazy"
