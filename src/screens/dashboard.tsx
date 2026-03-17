@@ -153,7 +153,7 @@ const [pdfPage, setPdfPage] = useState(1)
       address: "DICT Bldg. Villarin Street, Carmen, Cagayan de Oro, Philippines, 9000",
       photo: RD,
       tel:"(088) 567 1769",
-      map: "8.4866874,124.629684"
+      map: "8.486695067648888, 124.63226903326867"
     },
   ]
 
@@ -737,7 +737,7 @@ const [pdfPage, setPdfPage] = useState(1)
             <div className="bg-gradient-to-br from-sky-400 to-blue-600 p-6 shadow-lg" onClick={() => setShowKeyboard(true)}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                  <FileText className="w-10 h-10 text-white" />
+                  <FileText className="w-10 h-10 text-white"   onClick={() => setShowPdfModal(true)} />
                 </div>
                 <div>
                   <h1 className="text-4xl font-bold text-white tracking-tight cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setShowPdfModal(true)}>
