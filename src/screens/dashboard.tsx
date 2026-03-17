@@ -26,6 +26,12 @@ import RD from './../assets/rd.jpg'
 import PDF_CC_TARP from "./../assets/CC TARP Regional (External) - 2025.pdf"
 import charterData from "./CC_TARP_Regional_External_2025.json"
 
+import { Document, Page, pdfjs } from "react-pdf"
+import "react-pdf/dist/Page/AnnotationLayer.css"
+import "react-pdf/dist/Page/TextLayer.css"
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch"
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface ProcessFlowItem {
   client_steps: string | null
@@ -100,6 +106,11 @@ const Dashboard = () => {
     { id: "6tM6SfzhcrA", duration: 94 },
     { id: "dofoQn3X-20", duration: 102 },
   ])
+
+  const [pdfNumPages, setPdfNumPages] = useState<number | null>(null)
+const [pdfPage, setPdfPage] = useState(1)
+
+
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [events, setEvents] = useState<EventItem[]>([])
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([])
@@ -570,7 +581,7 @@ const Dashboard = () => {
                       {/* PDF Modal */}
 {showPdfModal && (
   <div
-    className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in"
+    className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
     onClick={() => setShowPdfModal(false)}
   >
     <div
@@ -590,16 +601,27 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* <a href={PDF_CC_TARP} download="CC_TARP_Regional_External_2025.pdf" className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-
-            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-            Download PDF
-          </a> */}
+          {/* Page controls */}
+          <button
+            disabled={pdfPage <= 1}
+            onClick={(e) => { e.stopPropagation(); setPdfPage(p => p - 1) }}
+            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center disabled:opacity-40 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4 text-white" />
+          </button>
+          <span className="text-white text-sm font-semibold min-w-[80px] text-center">
+            {pdfPage} / {pdfNumPages || "..."}
+          </span>
+          <button
+            disabled={pdfPage >= (pdfNumPages || 1)}
+            onClick={(e) => { e.stopPropagation(); setPdfPage(p => p + 1) }}
+            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center disabled:opacity-40 transition-colors"
+          >
+            <ChevronRight className="w-4 h-4 text-white" />
+          </button>
           <button
             onClick={() => setShowPdfModal(false)}
-            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors ml-2"
           >
             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -608,21 +630,73 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* PDF Viewer — touch-friendly via native browser rendering */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <iframe
-          src={`${PDF_CC_TARP}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
-          className="w-full h-full border-0"
-          title="Citizen's Charter PDF"
-        />
+      {/* PDF Pages */}
+{/* PDF Pages */}
+<div className="flex-1 min-h-0 overflow-hidden bg-gray-100 flex justify-center">
+  <TransformWrapper
+    initialScale={1.5}
+    minScale={0.5}
+    maxScale={5}
+    centerOnInit
+    wheel={{ step: 0.1 }}
+    pinch={{ step: 5 }}
+    doubleClick={{ mode: "zoomIn" }}
+    panning={{ velocityDisabled: false }}
+  >
+    {({ zoomIn, zoomOut, resetTransform }) => (
+      <div className="w-full h-full flex flex-col">
+        {/* Zoom controls */}
+        <div className="absolute bottom-16 right-4 z-10 flex flex-col gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); zoomIn() }}
+            className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-blue-600 font-bold text-xl hover:bg-blue-50 transition-colors border border-blue-100"
+          >+</button>
+          <button
+            onClick={(e) => { e.stopPropagation(); zoomOut() }}
+            className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-blue-600 font-bold text-xl hover:bg-blue-50 transition-colors border border-blue-100"
+          >−</button>
+          <button
+            onClick={(e) => { e.stopPropagation(); resetTransform() }}
+            className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-blue-600 text-xs font-bold hover:bg-blue-50 transition-colors border border-blue-100"
+          >⟳</button>
+        </div>
+
+        <TransformComponent
+          wrapperStyle={{ width: "100%", height: "100%", overflow: "hidden" }}
+          contentStyle={{ display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "16px" }}
+        >
+        <Document
+  file={PDF_CC_TARP}
+  onLoadSuccess={({ numPages }) => { setPdfNumPages(numPages); setPdfPage(1) }}
+  loading={
+    <div className="flex items-center justify-center" style={{ width: 600, height: 400 }}>
+      <div className="text-center">
+        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-slate-500 text-sm">Loading PDF...</p>
       </div>
+    </div>
+  }
+>
+  <Page
+    pageNumber={pdfPage}
+    width={Math.min(window.innerWidth - 48, 900)}
+    devicePixelRatio={window.devicePixelRatio * 3}
+    renderTextLayer={false}
+    renderAnnotationLayer={false}
+  />
+</Document>
+        </TransformComponent>
+      </div>
+    )}
+  </TransformWrapper>
+</div>
 
       {/* Touch hint */}
       <div className="bg-blue-50 border-t border-blue-100 px-4 py-2 flex items-center justify-center gap-2 flex-shrink-0">
         <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
         </svg>
-        <p className="text-blue-500 text-xs">Pinch to zoom · Swipe to scroll · Use toolbar to navigate pages</p>
+        <p className="text-blue-500 text-xs">Swipe to scroll · Use arrows to change pages</p>
       </div>
     </div>
   </div>
