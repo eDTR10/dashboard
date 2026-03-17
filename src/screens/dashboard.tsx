@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react"
-import { ChevronLeft, ChevronRight, Calendar, Search, ArrowRight, ArrowLeft, FileText, Newspaper, Megaphone, Lock, Unlock, MapPin, Droplets, ArrowDownIcon } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar, Search, ArrowRight, ArrowLeft, FileText, Newspaper, Megaphone, Lock, Unlock, MapPin, Droplets, ArrowDownIcon, PhoneCall } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
@@ -22,7 +23,7 @@ import MisamisOccidental from './../assets/misoc.png'
 import MisamisOriental from './../assets/misor.png'
 import Iligan from './../assets/iligan.png'
 import RD from './../assets/rd.jpg'
-
+import PDF_CC_TARP from "./../assets/CC TARP Regional (External) - 2025.pdf"
 import charterData from "./CC_TARP_Regional_External_2025.json"
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -70,8 +71,8 @@ interface NewsItem { date: string; title: string; category: string; postUrl: str
 interface VideoItem { id: string; duration: number }
 interface EventItem { date: string; title: string; time: string; description: string }
 interface AnnouncementItem { date: string; title: string; priority: string; description: string }
-interface OfficerData { name: string; province: string; email: string; address: string; photo: string | null; map: string }
-interface MapModal { name: string; address: string; mapUrl: string; embedUrl: string }
+interface OfficerData { name: string; province: string; email: string; address: string; photo: string | null; map: string,tel:string }
+interface MapModal { name: string; address: string; mapUrl: string }
 
 const mapJsonServices = (services: JsonService[]): CitizenService[] =>
   services.map((s) => ({
@@ -99,6 +100,7 @@ const Dashboard = () => {
     { id: "6tM6SfzhcrA", duration: 94 },
     { id: "dofoQn3X-20", duration: 102 },
   ])
+  const [showPdfModal, setShowPdfModal] = useState(false)
   const [events, setEvents] = useState<EventItem[]>([])
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([])
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
@@ -113,6 +115,8 @@ const Dashboard = () => {
   const [videoCountdown, setVideoCountdown] = useState(0)
   // ── Map modal state ───────────────────────────────────────────────────────
   const [mapModal, setMapModal] = useState<MapModal | null>(null)
+  
+
 
   const autoSwipeTimer = useRef<NodeJS.Timeout | null>(null)
   const videoAutoNextTimer = useRef<NodeJS.Timeout | null>(null)
@@ -123,6 +127,7 @@ const Dashboard = () => {
   const servicesScrollRef = useRef<HTMLDivElement>(null)
   const detailScrollRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
+
 
   const citizenItems: CitizenService[] = mapJsonServices(
     charterData.document.services as unknown as JsonService[]
@@ -136,7 +141,8 @@ const Dashboard = () => {
       email: "region10@dict.gov.ph",
       address: "DICT Bldg. Villarin Street, Carmen, Cagayan de Oro, Philippines, 9000",
       photo: RD,
-      map: "https://www.google.com/maps/place/DICT+Region+10/@8.4866874,124.6227371,2615m/data=!3m1!1e3!4m10!1m2!2m1!1sdict+10!3m6!1s0x32fff3230e51443b:0x63659867c5f95c0!8m2!3d8.4866874!4d124.6322643!15sCgdkaWN0IDEwkgERZ292ZXJubWVudF9vZmZpY2XgAQA!16s%2Fg%2F11csp8qv0l?entry=ttu&g_ep=EgoyMDI2MDMxMS4wIKXMDSoASAFQAw%3D%3D"
+      tel:"(088) 567 1769",
+      map: "8.4866874,124.629684"
     },
   ]
 
@@ -147,7 +153,8 @@ const Dashboard = () => {
       email: "r10.bukidnon@dict.gov.ph",
       address: "Captain Juan Melendez St., Malaybalay City, Bukidnon",
       photo: Bukidnon,
-      map: "https://www.google.com/maps/place/DICT+Bukidnon+Provincial+Office/@8.1590525,125.1436744,17z/data=!3m1!4b1!4m6!3m5!1s0x32ff749240830377:0x178495778528749!8m2!3d8.1590472!4d125.1462493!16s%2Fg%2F11b800465c?entry=ttu&g_ep=EgoyMDI2MDMxMS4wIKXMDSoASAFQAw%3D%3D"
+      tel:"(088) 537 0594",
+      map: "8.1537392,125.1277816"
     },
     {
       name: "Nideliza Fe O. Nacilla",
@@ -155,7 +162,8 @@ const Dashboard = () => {
       email: "r1O.misamisoriental@dict.gov.ph",
       address: "Toribio Chavez St., Cagayan de Oro City, Misamis Oriental",
       photo: MisamisOriental,
-      map: "https://www.google.com/maps/place/DICT+Misamis+Oriental+Office/@8.4771173,124.6431471,82m/data=!3m1!1e3!4m14!1m7!3m6!1s0x32fff3da4cc491cb:0xae08404d85106f29!2sDICT+Misamis+Oriental+Office!8m2!3d8.4771531!4d124.6432107!16s%2Fg%2F11q1t82k8c!3m5!1s0x32fff3da4cc491cb:0xae08404d85106f29!8m2!3d8.4771531!4d124.6432107!16s%2Fg%2F11q1t82k8c?entry=ttu&g_ep=EgoyMDI2MDMxMS4wIKXMDSoASAFQAw%3D%3D"
+      tel:"(088) 859 1280",
+      map: "8.477131591214658, 124.64323171893022"
     },
     {
       name: "Engr. Kenneth T. Asuncion",
@@ -163,7 +171,8 @@ const Dashboard = () => {
       email: "dict1O.misocc@dict.gov.ph",
       address: "Independence St., Pob II, Oroquieta City, Misamis Occidental",
       photo: MisamisOccidental,
-      map: "https://www.google.com/maps/place/Department+of+Information+and+Communications+Technology+-+Misamis+Occidental+Provincial+Office/@8.4857667,123.8083697,82m/data=!3m1!1e3!4m9!1m2!2m1!1sdict+misamis+occidental!3m5!1s0x32551f004c87c17b:0xdc6dfabfccf0a7e5!8m2!3d8.4857456!4d123.8085215!16s%2Fg%2F11vz0ngq29?entry=ttu&g_ep=EgoyMDI2MDMxMS4wIKXMDSoASAFQAw%3D%3D"
+      tel:"(088) 521 3768",
+      map: "8.48574016568015, 123.8085086481916"
     },
     {
       name: "Engr. James Kevin M. Sagocsoc",
@@ -171,7 +180,8 @@ const Dashboard = () => {
       email: "r10.camiguin@dict.gov.ph",
       address: "Gen. B. Aranas Street, Poblacion, Mambajao, Camiguin",
       photo: Camiguin,
-      map: "https://www.google.com/maps/place/DICT+Bukidnon+Provincial+Office/@8.1590525,125.1436744,17z/data=!3m1!4b1!4m6!3m5!1s0x32ff749240830377:0x178495778528749!8m2!3d8.1590472!4d125.1462493!16s%2Fg%2F11b800465c?entry=ttu&g_ep=EgoyMDI2MDMxMS4wIKXMDSoASAFQAw%3D%3D"
+      tel:"(088) 845 7300",
+      map: "9.24341212362749, 124.72370144839408"
     },
     {
       name: "Engr. Owieda B. Smith",
@@ -179,7 +189,8 @@ const Dashboard = () => {
       email: "r1O.lanaodelnorte@dict.gov.ph",
       address: "Purok 3 RCIS, Poblacion, Tubod, Lanao del Norte",
       photo: LanaoDelSur,
-      map: "https://www.google.com/maps/place/DICT+Bukidnon+Provincial+Office/@8.1590525,125.1436744,17z/data=!3m1!4b1!4m6!3m5!1s0x32ff749240830377:0x178495778528749!8m2!3d8.1590472!4d125.1462493!16s%2Fg%2F11b800465c?entry=ttu&g_ep=EgoyMDI2MDMxMS4wIKXMDSoASAFQAw%3D%3D"
+      tel:"(063) 227 6876",
+      map: "8.056634422, 123.7889082"
     },
     {
       name: "Acmilah M. Macabuat",
@@ -187,7 +198,8 @@ const Dashboard = () => {
       email: "dict10.iligan@dict.gov.ph",
       address: "City Hall Grounds, Brgy Palao, Iligan City",
       photo: Iligan,
-      map: "https://www.google.com/maps/place/DICT+Bukidnon+Provincial+Office/@8.1590525,125.1436744,17z/data=!3m1!4b1!4m6!3m5!1s0x32ff749240830377:0x178495778528749!8m2!3d8.1590472!4d125.1462493!16s%2Fg%2F11b800465c?entry=ttu&g_ep=EgoyMDI2MDMxMS4wIKXMDSoASAFQAw%3D%3D"
+      tel:"(063) 223 7136",
+      map: "8.225916191011857, 124.25174195680769"
     },
   ]
 
@@ -448,22 +460,6 @@ const Dashboard = () => {
     return <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(text) }} />
   }
 
-  // ── Convert any Google Maps URL → embeddable maps/embed URL ──────────────
-  // Extracts lat/lng from the URL path and builds an embed URL.
-  // Falls back to a place search embed if coordinates can't be parsed.
-  const buildEmbedUrl = (mapUrl: string, placeName: string): string => {
-    const API_KEY = import.meta.env.VITE_GOOGLE_KEY || ""
-    // Try to extract coordinates from the URL (e.g. @8.4866874,124.6322643)
-    const coordMatch = mapUrl.match(/@(-?[\d.]+),(-?[\d.]+)/)
-    if (coordMatch) {
-      const lat = coordMatch[1]
-      const lng = coordMatch[2]
-      return `https://www.google.com/maps/embed/v1/view?key=${API_KEY}&center=${lat},${lng}&zoom=17&maptype=roadmap`
-    }
-    // Fallback: search by place name
-    const query = encodeURIComponent(placeName)
-    return `https://www.google.com/maps/embed/v1/place?key=${API_KEY}&q=${query}`
-  }
 
   const renderRequirementsTable = (rows: RequirementItem[]) => (
     <div className="w-full text-sm rounded-lg overflow-hidden border border-blue-200">
@@ -521,7 +517,7 @@ const Dashboard = () => {
             <span className="text-yellow-300 text-xs font-bold uppercase tracking-widest">{po.province}</span>
           </div>
           <div className="h-px bg-white/15 mb-2" />
-          <p className="text-white text-base font-bold leading-tight mb-3">{po.name}</p>
+          <p className="text-white text-2xl font-bold leading-tight mb-3">{po.name}</p>
           <div className="space-y-2">
             {/* Email */}
             <div className="flex items-center gap-2">
@@ -534,9 +530,17 @@ const Dashboard = () => {
               <span className="text-white/80 text-sm truncate">{po.email}</span>
             </div>
 
+             {/* Email */}
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center flex-shrink-0">
+               <PhoneCall className="w-3.5 h-3.5 text-yellow-300" />
+              </div>
+              <span className="text-white/80 text-sm truncate">{po.tel}</span>
+            </div>
+
             {/* Address — clickable → opens map modal */}
             <button
-              onClick={() => setMapModal({ name: po.name, address: po.address, mapUrl: po.map, embedUrl: buildEmbedUrl(po.map, po.name + ' ' + po.address) })}
+              onClick={() => setMapModal({ name: po.name, address: po.address, mapUrl: po.map })}
               className="flex items-start gap-2 w-full text-left group/addr"
               title="Click to view location on map"
             >
@@ -562,19 +566,87 @@ const Dashboard = () => {
   return (
     <div className="h-screen w-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-hidden">
       {/* Logo bar */}
+
+                      {/* PDF Modal */}
+{showPdfModal && (
+  <div
+    className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in"
+    onClick={() => setShowPdfModal(false)}
+  >
+    <div
+      className="bg-white rounded-2xl shadow-2xl w-full max-w-[80vw] overflow-hidden animate-fade-in-up flex flex-col"
+      style={{ height: "90vh" }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+            <FileText className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-white font-bold text-base leading-tight">Citizen's Charter</p>
+            <p className="text-blue-200 text-xs mt-0.5">CC TARP Regional (External) – 2025</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* <a href={PDF_CC_TARP} download="CC_TARP_Regional_External_2025.pdf" className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+
+            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+            Download PDF
+          </a> */}
+          <button
+            onClick={() => setShowPdfModal(false)}
+            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+          >
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* PDF Viewer — touch-friendly via native browser rendering */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <iframe
+          src={`${PDF_CC_TARP}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
+          className="w-full h-full border-0"
+          title="Citizen's Charter PDF"
+        />
+      </div>
+
+      {/* Touch hint */}
+      <div className="bg-blue-50 border-t border-blue-100 px-4 py-2 flex items-center justify-center gap-2 flex-shrink-0">
+        <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+        </svg>
+        <p className="text-blue-500 text-xs">Pinch to zoom · Swipe to scroll · Use toolbar to navigate pages</p>
+      </div>
+    </div>
+  </div>
+)}
+
       <div className="w-full bg-white/80 py-3 px-2 flex items-center justify-center shadow-md mb-4 animate-fade-in-down">
         <div className="flex items-center justify-center gap-16 w-full max-w-6xl mx-auto">
-          <img src={eGov} alt="eGov PH" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 0 ? "animate-wiggle" : ""}`} />
+          <img src={eGov}  alt="eGov PH" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 0 ? "animate-wiggle" : ""}`} />
           <img src={eLGU} alt="eLGU" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 1 ? "animate-wiggle" : ""}`} />
-          <img src={Lakip} alt="Lakip" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 2 ? "animate-wiggle" : ""}`} />
+          
           <img src={FreeWiFi} alt="Free WiFi For All" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 3 ? "animate-wiggle" : ""}`} />
-          <img src={IIDB} alt="IIDB" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 4 ? "animate-wiggle" : ""}`} />
-          <img src={ILCDB} alt="ILCDB" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 5 ? "animate-wiggle" : ""}`} />
-          <img src={CyberSec} alt="Cybersecurity" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 6 ? "animate-wiggle" : ""}`} />
           <img src={NBP} alt="National Broadband Plan" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 7 ? "animate-wiggle" : ""}`} />
+          
+          <img src={CyberSec} alt="Cybersecurity" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 6 ? "animate-wiggle" : ""}`} />
           <img src={PNPKI} alt="Philippine National PKI" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 8 ? "animate-wiggle" : ""}`} />
           <img src={NIPPSB} alt="ICT Planning, Policy and Standards" className={`h-20 object-contain transition-transform duration-300 ${activeLogo === 9 ? "animate-wiggle" : ""}`} />
-        </div>
+          <img src={IIDB} alt="IIDB" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 4 ? "animate-wiggle" : ""}`} />
+
+
+
+          <img src={ILCDB} alt="ILCDB" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 5 ? "animate-wiggle" : ""}`} />
+          <img src={Lakip} alt="Lakip" className={`h-10 object-contain transition-transform duration-300 ${activeLogo === 2 ? "animate-wiggle" : ""}`} />
+         
+          </div>
       </div>
 
       <div className="h-[calc(100%-120px)] w-full flex gap-5 p-5 pt-0">
@@ -594,7 +666,7 @@ const Dashboard = () => {
                   <FileText className="w-10 h-10 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold text-white tracking-tight">
+                  <h1 className="text-4xl font-bold text-white tracking-tight cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setShowPdfModal(true)}>
                     {selectedService ? renderHtml(selectedService.title) : "Citizen's Charter"}
                   </h1>
                   {!selectedService && <p className="text-blue-100 text-base">Browse available government services</p>}
@@ -649,8 +721,31 @@ const Dashboard = () => {
                   )}
                 </div>
 
+
+                
+
                 {/* Feedback */}
-                <div className="mt-8 bg-gradient-to-br from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-xl shadow p-6">
+               
+
+                {/* Regional Director */}
+                <div className="mt-8 space-y-4">
+                  <h2 className="text-2xl font-bold flex items-center gap-2 text-blue-800">
+                    <span role="img" aria-label="pin">📌</span> DICT 10 - Regional Director
+                  </h2>
+                  <div className="grid grid-cols-1 gap-4">
+                    {directorOfficers.map((po, idx) => <OfficerCard key={idx} po={po} />)}
+                  </div>
+                </div>
+
+                {/* Provincial Officers */}
+                <div className="mt-8 space-y-4">
+                  <h2 className="text-xl font-bold flex items-center gap-2 text-blue-800">PROVINCIAL OFFICERS</h2>
+                  <div className="grid grid-cols-2 gap-4">
+                    {provincialOfficers.map((po, idx) => <OfficerCard key={idx} po={po} />)}
+                  </div>
+                </div>
+
+ <div className="mt-8 bg-gradient-to-br from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-xl shadow p-6">
                   <h2 className="text-2xl font-bold text-yellow-800 mb-2 flex items-center gap-2">
                     <span role="img" aria-label="pin">📌</span> FEEDBACK AND COMPLAINTS MECHANISM
                   </h2>
@@ -686,23 +781,6 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                {/* Regional Director */}
-                <div className="mt-8 space-y-4">
-                  <h2 className="text-2xl font-bold flex items-center gap-2 text-blue-800">
-                    <span role="img" aria-label="pin">📌</span> DICT 10 - Regional Director
-                  </h2>
-                  <div className="grid grid-cols-1 gap-4">
-                    {directorOfficers.map((po, idx) => <OfficerCard key={idx} po={po} />)}
-                  </div>
-                </div>
-
-                {/* Provincial Officers */}
-                <div className="mt-8 space-y-4">
-                  <h2 className="text-xl font-bold flex items-center gap-2 text-blue-800">PROVINCIAL OFFICERS</h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    {provincialOfficers.map((po, idx) => <OfficerCard key={idx} po={po} />)}
-                  </div>
-                </div>
               </div>
             ) : (
               <div className="flex-1 flex flex-col p-6 overflow-hidden animate-fade-in">
@@ -941,7 +1019,7 @@ const Dashboard = () => {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <a
-                  href={mapModal.mapUrl}
+                  href={`https://www.google.com/maps?q=${mapModal.mapUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap"
@@ -960,16 +1038,24 @@ const Dashboard = () => {
                 </button>
               </div>
             </div>
-            {/* Map iframe */}
+            {/* Map iframe — extracts @lat,lng from the Google Maps URL and
+                 uses maps.google.com/maps?q=lat,lng&output=embed which always
+                 renders with a pin on the exact location, no API key needed */}
             <div style={{ height: "480px" }}>
-              <iframe
-                src={mapModal.embedUrl}
-                className="w-full h-full border-0"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title={`Map – ${mapModal.name}`}
-              />
+              {(() => {
+                // mapUrl is now a clean "lat,lng" string
+                const src = `https://maps.google.com/maps?q=${mapModal.mapUrl}&z=17&output=embed`
+                return (
+                  <iframe
+                    src={src}
+                    className="w-full h-full border-0"
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title={`Map – ${mapModal.name}`}
+                  />
+                )
+              })()}
             </div>
           </div>
         </div>
